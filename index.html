@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>PingPoint</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+    <!-- =========================
+         STARTSEITE
+    ========================== -->
+
+    <section
+        id="homeView"
+        class="view active"
+    >
+
+        <header class="header">
+
+            <div class="header-top">
+
+                <div class="logo">
+                    Ping<span>Point</span>
+                </div>
+
+                <div class="profile">
+                    👤
+                </div>
+
+            </div>
+
+
+            <div class="welcome">
+
+                <p>
+                    Willkommen zurück
+                </p>
+
+                <h1>
+                    Bereit für ein Spiel?
+                </h1>
+
+            </div>
+
+        </header>
+
+
+        <main class="content">
+
+
+            <button class="new-game" onclick="showNewGame()">
+
+                <div class="new-game-icon">
+                    🏓
+                </div>
+
+                <h2>
+                    Neues Spiel
+                </h2>
+
+                <p>
+                    Spiel konfigurieren und loslegen
+                </p>
+
+            </button>
+
+
+            <div class="section-title">
+                Übersicht
+            </div>
+
+
+            <div class="cards">
+
+
+                <div class="card">
+
+                    <div class="card-icon">
+                        👥
+                    </div>
+
+                    <h3>
+                        Spieler
+                    </h3>
+
+                    <p>
+                        <span id="homePlayerCount">
+                            0
+                        </span>
+                        Spieler
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-icon">
+                        📊
+                    </div>
+
+                    <h3>
+                        Spiele
+                    </h3>
+
+                    <p>
+                        <span id="homeMatchCount">
+                            0
+                        </span> 
+			Spiele
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="section-title">
+                Zuletzt gespielt
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-icon">
+                    🏓
+                </div>
+
+                <h3>
+                    -- Kommt Noch --
+                </h3>
+
+                <p>
+                    Deine vergangenen Spiele
+                    werden hier angezeigt.
+                </p>
+
+            </div>
+
+
+        </main>
+
+    </section>
+
+
+
+    <!-- =========================
+         SPIELER
+    ========================== -->
+
+    <section
+        id="playersView"
+        class="view"
+    >
+
+        <header class="header">
+
+            <div class="header-top">
+
+                <div class="logo">
+                    Ping<span>Point</span>
+                </div>
+
+                <div class="profile">
+                    👤
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <main class="content">
+
+
+            <div class="page-header">
+
+                <h2>
+                    Spieler
+                </h2>
+
+                <button
+                    class="add-button"
+                    onclick="toggleAddPlayer()"
+                >
+                    +
+                </button>
+
+            </div>
+
+
+            <!-- FORMULAR -->
+
+            <div
+                id="addPlayerBox"
+                class="add-player-box"
+            >
+
+                <input
+                    id="playerNameInput"
+                    class="input"
+                    type="text"
+                    placeholder="Name des Spielers"
+                    maxlength="10"
+                >
+
+
+                <div class="form-buttons">
+
+                    <button
+                        class="form-button cancel-button"
+                        onclick="toggleAddPlayer()"
+                    >
+                        Abbrechen
+                    </button>
+
+
+                    <button
+                        class="form-button save-button"
+                        onclick="addPlayer()"
+                    >
+                        Spieler hinzufügen
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="playerList"
+                class="player-list"
+            ></div>
+
+
+        </main>
+
+    </section>
+
+
+<!-- =========================
+     NEUES SPIEL
+========================== -->
+
+<section id="newGameView" class="view">
+
+    <header class="header">
+
+        <div class="header-top">
+
+            <div class="logo">
+                Ping<span>Point</span>
+            </div>
+
+            <button
+                class="back-button"
+                onclick="showView('home')"
+            >
+                ←
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <main class="content">
+
+        <div class="page-header">
+
+            <div>
+                <h2>Neues Spiel</h2>
+
+                <p class="page-subtitle">
+                    Konfiguriere dein Spiel
+                </p>
+            </div>
+
+        </div>
+
+
+        <!-- SPIELMODUS -->
+
+        <div class="setting-section">
+
+            <div class="setting-title">
+                Spielmodus
+            </div>
+
+            <div class="option-grid">
+
+                <button
+                    class="option-card selected"
+                    id="singleOption"
+                    onclick="selectMode('single')"
+                >
+
+                    <div class="option-icon">
+                        👤
+                    </div>
+
+                    <div>
+                        <strong>Einzel</strong>
+
+                        <span>
+                            1 gegen 1
+                        </span>
+                    </div>
+
+                </button>
+
+
+                <button
+                    class="option-card"
+                    id="doubleOption"
+                    onclick="selectMode('double')"
+                >
+
+                    <div class="option-icon">
+                        👥
+                    </div>
+
+                    <div>
+                        <strong>Doppel</strong>
+
+                        <span>
+                            2 gegen 2
+                        </span>
+                    </div>
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- SPIELER -->
+
+        <div class="setting-section">
+
+            <div class="setting-title">
+                Spieler
+            </div>
+
+
+            <div
+                id="singlePlayers"
+                class="player-selection"
+            >
+
+                <div class="select-group">
+
+                    <label>
+                        Spieler 1
+                    </label>
+
+                    <select
+                        id="player1"
+                        class="select-input"
+                    >
+                    </select>
+
+                </div>
+
+
+                <div class="vs">
+                    VS
+                </div>
+
+
+                <div class="select-group">
+
+                    <label>
+                        Spieler 2
+                    </label>
+
+                    <select
+                        id="player2"
+                        class="select-input"
+                    >
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="doublePlayers"
+                class="double-selection"
+                style="display:none;"
+            >
+
+                <div class="team-label">
+                    Team 1
+                </div>
+
+                <div class="team-selects">
+
+                    <select
+                        id="team1player1"
+                        class="select-input"
+                    ></select>
+
+                    <select
+                        id="team1player2"
+                        class="select-input"
+                    ></select>
+
+                </div>
+
+
+                <div class="vs team-vs">
+                    VS
+                </div>
+
+
+                <div class="team-label">
+                    Team 2
+                </div>
+
+                <div class="team-selects">
+
+                    <select
+                        id="team2player1"
+                        class="select-input"
+                    ></select>
+
+                    <select
+                        id="team2player2"
+                        class="select-input"
+                    ></select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SÄTZE -->
+
+        <div class="setting-section">
+
+            <div class="setting-title">
+                Spielmodus
+            </div>
+
+
+            <div class="segmented-control">
+
+                <button
+                    class="segment active"
+                    onclick="selectBestOf(3)"
+                    id="bestOf3"
+                >
+                    Best of 3
+                </button>
+
+                <button
+                    class="segment"
+                    onclick="selectBestOf(5)"
+                    id="bestOf5"
+                >
+                    Best of 5
+                </button>
+
+                <button
+                    class="segment"
+                    onclick="selectBestOf(7)"
+                    id="bestOf7"
+                >
+                    Best of 7
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- PUNKTE -->
+
+        <div class="setting-section">
+
+            <div class="setting-title">
+                Punkte pro Satz
+            </div>
+
+
+            <div class="points-options">
+
+                <button
+                    class="point-option active"
+                    onclick="selectPoints(11)"
+                    id="points11"
+                >
+                    11
+                </button>
+
+
+                <button
+                    class="point-option"
+                    onclick="selectPoints(21)"
+                    id="points21"
+                >
+                    21
+                </button>
+
+
+                <button
+                    class="point-option"
+                    onclick="selectPoints('custom')"
+                    id="pointsCustom"
+                >
+                    Eigene
+                </button>
+
+            </div>
+
+
+            <input
+                id="customPoints"
+                class="input custom-points"
+                type="text"
+                pattern="[0-9]{4}"
+                maxlength="2"
+                placeholder="Punktzahl eingeben"
+                style="display:none;"
+            >
+
+            <p class="setting-hint">
+                Ein Satz wird mit mindestens 2 Punkten
+                Vorsprung gewonnen.
+            </p>
+
+        </div>
+
+
+        <!-- ZUSAMMENFASSUNG -->
+
+        <div class="game-preview">
+
+            <div class="preview-title">
+                Deine Einstellungen
+            </div>
+
+
+            <div class="preview-row">
+
+                <span>
+                    Modus
+                </span>
+
+                <strong id="previewMode">
+                    Einzel
+                </strong>
+
+            </div>
+
+
+            <div class="preview-row">
+
+                <span>
+                    Spieler
+                </span>
+
+                <strong id="previewPlayers">
+                    Noch nicht ausgewählt
+                </strong>
+
+            </div>
+
+
+            <div class="preview-row">
+
+                <span>
+                    Sätze
+                </span>
+
+                <strong id="previewBestOf">
+                    Best of 3
+                </strong>
+
+            </div>
+
+
+            <div class="preview-row">
+
+                <span>
+                    Punkte
+                </span>
+
+                <strong id="previewPoints">
+                    11
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- START -->
+
+        <button
+            class="start-game-button"
+            onclick="startConfiguredGame()"
+        >
+
+            <span>
+                🏓
+            </span>
+
+            Spiel starten
+
+        </button>
+
+
+    </main>
+
+</section>
+
+
+
+<!-- =========================
+     SCOREBOARD
+========================== -->
+
+<section
+    id="scoreboardView"
+    class="view"
+></section>
+
+    <!-- =========================
+     SPIELE
+========================== -->
+
+<section id="gamesView" class="view">
+
+    <header class="header">
+
+        <div class="header-top">
+
+            <div class="logo">
+                Ping<span>Point</span>
+            </div>
+
+            <div class="profile">
+                👤
+            </div>
+
+        </div>
+
+    </header>
+
+    <main
+        id="gamesContent"
+        class="content"
+    ></main>
+
+</section>
+
+
+
+    <!-- =========================
+     STATISTIK
+========================== -->
+
+<section
+    id="statsView"
+    class="view"
+>
+
+    <header class="header">
+
+        <div class="header-top">
+
+            <div class="logo">
+                Ping<span>Point</span>
+            </div>
+
+            <div class="profile">
+                👤
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main class="content">
+
+        <div class="page-header">
+
+            <div>
+
+                <h2>
+                    Statistik
+                </h2>
+
+                <p class="page-subtitle">
+                    Alle Spieler im Überblick
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="stats-content"
+            id="statsContent"
+        ></div>
+
+    </main>
+
+</section>
+
+
+
+    <!-- =========================
+         NAVIGATION
+    ========================== -->
+
+    <nav class="bottom-nav">
+
+
+        <button
+            class="nav-item active"
+            onclick="showView('home')"
+        >
+
+            <div class="nav-icon">
+                🏠
+            </div>
+
+            <div class="nav-label">
+                Start
+            </div>
+
+        </button>
+
+
+        <button
+            class="nav-item"
+            onclick="showView('players')"
+        >
+
+            <div class="nav-icon">
+                👥
+            </div>
+
+            <div class="nav-label">
+                Spieler
+            </div>
+
+        </button>
+
+
+        <button
+            class="nav-item"
+            onclick="showView('games')"
+        >
+
+            <div class="nav-icon">
+                📚
+            </div>
+
+            <div class="nav-label">
+                Spiele
+            </div>
+
+        </button>
+
+
+        <button
+            class="nav-item"
+            onclick="showView('stats')"
+        >
+
+            <div class="nav-icon">
+                📊
+            </div>
+
+            <div class="nav-label">
+                Statistik
+            </div>
+
+        </button>
+
+
+    </nav>
+
+
+</div>
+
+<script src="js/state.js"></script>
+<script src="js/app.js"></script>
+<script src="js/players.js"></script>
+<script src="js/game.js"></script>
+<script src="js/scoreboard.js"></script>
+<script src="js/history.js"></script>
+<script src="js/statistics.js"></script>
+
+</body>
+
+</html>
