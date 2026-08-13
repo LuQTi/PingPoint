@@ -2503,7 +2503,7 @@ select:focus-visible {
 
 .set-tab.set-won span,
 .set-tab.set-won strong {
-    color: color: var(--result-won);
+    color: var(--result-won);
 }
 
 
@@ -2512,14 +2512,14 @@ select:focus-visible {
 ========================= */
 
 .set-tab.set-lost {
-    border-color: color: var(--result-lost);
+    border-color: var(--result-lost);
 
-    color: color: var(--result-lost);
+    color: var(--result-lost);
 }
 
 .set-tab.set-lost span,
 .set-tab.set-lost strong {
-    color: color: var(--result-lost);
+    color: var(--result-lost);
 }
 
 
@@ -2551,16 +2551,16 @@ select:focus-visible {
 /* Aktiver gewonnener Satz */
 
 .set-tab.active.set-won {
-    background: color: var(--result-won-bg);
+    background: var(--result-won-bg);
 
-    border-color: color: var(--result-won);
+    border-color: var(--result-won);
 
-    color: color: var(--result-won);
+    color: var(--result-won);
 }
 
 .set-tab.active.set-won span,
 .set-tab.active.set-won strong {
-    color: color: var(--result-won);
+    color: var(--result-won);
 }
 
 
