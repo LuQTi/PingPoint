@@ -208,61 +208,65 @@ function buildNewGame() {
 
                 <!-- DOPPEL -->
 
-                <div
-                    id="doublePlayers"
-                    class="double-selection"
-                    style="display:none;"
-                >
+<div
+    id="doublePlayers"
+    class="double-selection"
+    style="display:none;"
+>
 
-                    <div class="team-label">
-                        Team 1
-                    </div>
+    <div class="double-team team-left">
 
+        <div class="team-label">
+            Team 1
+        </div>
 
-                    <div class="team-selects">
+        <div class="team-selects">
 
-                        <select
-                            id="team1player1"
-                            class="select-input"
-                        ></select>
+            <select
+                id="team1player1"
+                class="select-input"
+            ></select>
 
+            <select
+                id="team1player2"
+                class="select-input"
+            ></select>
 
-                        <select
-                            id="team1player2"
-                            class="select-input"
-                        ></select>
+        </div>
 
-                    </div>
-
-
-                    <div class="vs team-vs">
-                        VS
-                    </div>
+    </div>
 
 
-                    <div class="team-label">
-                        Team 2
-                    </div>
+    <div class="vs team-vs">
+        VS
+    </div>
 
 
-                    <div class="team-selects">
+    <div class="double-team team-right">
 
-                        <select
-                            id="team2player1"
-                            class="select-input"
-                        ></select>
+        <div class="team-label">
+            Team 2
+        </div>
 
+        <div class="team-selects">
 
-                        <select
-                            id="team2player2"
-                            class="select-input"
-                        ></select>
+            <select
+                id="team2player1"
+                class="select-input"
+            ></select>
 
-                    </div>
+            <select
+                id="team2player2"
+                class="select-input"
+            ></select>
 
-                </div>
+        </div>
 
-            </div>
+    </div>
+
+</div>
+
+</div>
 
 
             <!-- =========================
@@ -538,7 +542,7 @@ function selectMode(mode) {
 
         doublePlayers.style.display =
             mode === "double"
-                ? "block"
+                ? "grid"
                 : "none";
 
     }

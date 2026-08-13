@@ -151,100 +151,158 @@ function calculatePlayerStatistics() {
 
 
             /* =========================
-               EINZEL
-            ========================== */
+   EINZEL
+========================= */
 
-            if (
-                match.mode === "single"
-            ) {
+if (
+    match.mode === "single"
+) {
 
-                const player1 =
-                    stats[
-                        String(
-                            match.players[0]
-                        )
-                    ];
+    const team1 = [
 
+        stats[
+            String(
+                match.players[0]
+            )
+        ]
 
-                const player2 =
-                    stats[
-                        String(
-                            match.players[1]
-                        )
-                    ];
+    ].filter(Boolean);
 
 
-                if (
-                    !player1 ||
-                    !player2
-                ) {
-                    return;
-                }
+    const team2 = [
+
+        stats[
+            String(
+                match.players[1]
+            )
+        ]
+
+    ].filter(Boolean);
 
 
-                player1.games++;
-                player2.games++;
+    /* 
+        Spiele zählen
+    */
+
+    [
+        ...team1,
+        ...team2
+    ].forEach(
+        player => {
+
+            player.games++;
+
+        }
+    );
 
 
-                if (
-                    Number(match.winner) === 1
-                ) {
+    /* 
+        Siege / Niederlagen
+    */
 
-                    player1.wins++;
-                    player2.losses++;
+    if (
+        Number(match.winner) === 1
+    ) {
 
-                }
+        team1.forEach(
+            player => {
 
-                else if (
-                    Number(match.winner) === 2
-                ) {
-
-                    player2.wins++;
-                    player1.losses++;
-
-                }
-
-
-                if (
-                    Array.isArray(
-                        match.finalSets
-                    )
-                ) {
-
-                    match.finalSets.forEach(
-                        set => {
-
-                            const score1 =
-                                Number(
-                                    set.score1
-                                ) || 0;
-
-
-                            const score2 =
-                                Number(
-                                    set.score2
-                                ) || 0;
-
-
-                            player1.pointsFor +=
-                                score1;
-
-                            player1.pointsAgainst +=
-                                score2;
-
-
-                            player2.pointsFor +=
-                                score2;
-
-                            player2.pointsAgainst +=
-                                score1;
-
-                        }
-                    );
-
-                }
+                player.wins++;
 
             }
+        );
+
+
+        team2.forEach(
+            player => {
+
+                player.losses++;
+
+            }
+        );
+
+    }
+
+    else if (
+        Number(match.winner) === 2
+    ) {
+
+        team2.forEach(
+            player => {
+
+                player.wins++;
+
+            }
+        );
+
+
+        team1.forEach(
+            player => {
+
+                player.losses++;
+
+            }
+        );
+
+    }
+
+
+    /* 
+        Punkte
+    */
+
+    if (
+        Array.isArray(
+            match.finalSets
+        )
+    ) {
+
+        match.finalSets.forEach(
+            set => {
+
+                const score1 =
+                    Number(
+                        set.score1
+                    ) || 0;
+
+
+                const score2 =
+                    Number(
+                        set.score2
+                    ) || 0;
+
+
+                team1.forEach(
+                    player => {
+
+                        player.pointsFor +=
+                            score1;
+
+                        player.pointsAgainst +=
+                            score2;
+
+                    }
+                );
+
+
+                team2.forEach(
+                    player => {
+
+                        player.pointsFor +=
+                            score2;
+
+                        player.pointsAgainst +=
+                            score1;
+
+                    }
+                );
+
+            }
+        );
+
+    }
+
+}
 
 
             /* =========================
@@ -455,10 +513,49 @@ function calculateOverallStatistics() {
     history.forEach(
         match => {
 
-            if (!match) {
+            if (
+                !match ||
+                !Array.isArray(match.players) ||
+                match.players.length < 2
+            ) {
+
                 return;
+
             }
 
+
+            /* =========================================
+               PRÜFEN, OB NOCH MINDESTENS EIN SPIELER
+               AUS DIESEM SPIEL EXISTIERT
+            ========================================= */
+
+            const hasExistingPlayer =
+                match.players.some(
+                    playerId =>
+                        players.some(
+                            player =>
+                                String(player.id) ===
+                                String(playerId)
+                        )
+                );
+
+
+            /*
+                Wenn kein einziger Spieler mehr
+                existiert, wird das Spiel komplett
+                aus der Statistik ausgeschlossen.
+            */
+
+            if (!hasExistingPlayer) {
+
+                return;
+
+            }
+
+
+            /* =========================================
+               SPIEL ZÄHLEN
+            ========================================= */
 
             matches++;
 
@@ -470,6 +567,10 @@ function calculateOverallStatistics() {
                     ? match.finalSets
                     : [];
 
+
+            /* =========================================
+               SÄTZE UND PUNKTE
+            ========================================= */
 
             finalSets.forEach(
                 set => {
@@ -492,6 +593,7 @@ function calculateOverallStatistics() {
                     team1Points +=
                         score1;
 
+
                     team2Points +=
                         score2;
 
@@ -506,6 +608,10 @@ function calculateOverallStatistics() {
         }
     );
 
+
+    /* =========================================
+       DURCHSCHNITTLICHE PUNKTE PRO SATZ
+    ========================================= */
 
     const averagePointsPerSet =
         sets > 0
