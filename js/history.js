@@ -492,8 +492,8 @@ function renderGames() {
 
                     ${
                         history.length === 1
-                            ? "abgeschlossenes Spiel"
-                            : "abgeschlossene Spiele"
+                            ? "gespieltes Spiel"
+                            : "gespielte Spiele"
                     }
 
                 </p>
@@ -620,9 +620,7 @@ function createGameCard(
 
                 <span class="game-date">
 
-                    ${formatDate(
-                        match.finishedAt
-                    )}
+                    ${formatDateTime(match.finishedAt)}
 
                 </span>
 
@@ -1125,47 +1123,64 @@ function renderGameDetails(
 
             <div class="set-tabs">
 
-                ${
-                    sets.length > 0
-                        ? sets
-                            .map(
-                                (
-                                    set,
-                                    index
-                                ) => `
+                ${ 
+    sets.length > 0 
+        ? sets 
+            .map( 
+                (set, index) => {
 
-                                    <button
-                                        class="
-                                            set-tab
-                                            ${
-                                                index === safeSet
-                                                    ? "active"
-                                                    : ""
-                                            }
-                                        "
-                                        onclick="
-                                            renderGameDetails(
-                                                ${matchIndex},
-                                                ${index}
-                                            )
-                                        "
-                                    >
+                    const setWinner =
+                        Number(set.score1) > Number(set.score2)
+                            ? 1
+                            : Number(set.score2) > Number(set.score1)
+                                ? 2
+                                : null;
 
-                                        <span>
-                                            Satz ${index + 1}
-                                        </span>
+                    const setResultClass =
+                        setWinner === match.winner
+                            ? "set-won"
+                            : setWinner
+                                ? "set-lost"
+                                : "";
 
-                                        <strong>
-                                            ${set.score1}
-                                            :
-                                            ${set.score2}
-                                        </strong>
+                    const activeClass =
+                        index === safeSet
+                            ? "active"
+                            : "";
 
-                                    </button>
+                    return `
 
-                                `
-                            )
-                            .join("")
+                        <button
+                            class="
+                                set-tab
+                                ${setResultClass}
+                                ${activeClass}
+                            "
+                            onclick="
+                                renderGameDetails(
+                                    ${matchIndex},
+                                    ${index}
+                                )
+                            "
+                        >
+
+                            <span>
+                                Satz ${index + 1}
+                            </span>
+
+                            <strong>
+                                ${set.score1}
+                                :
+                                ${set.score2}
+                            </strong>
+
+                        </button>
+
+                    `;
+
+                }
+            )
+            .join("")
 
                         : `
 
@@ -1211,16 +1226,26 @@ function createCurrentSetTable(
 ) {
 
     const points =
-        Array.isArray(
-            set.points
-        )
+        Array.isArray(set.points)
             ? set.points
             : [];
 
+    const setWinner =
+        Number(set.score1) > Number(set.score2)
+            ? 1
+            : Number(set.score2) > Number(set.score1)
+                ? 2
+                : null;
 
-    if (
-        points.length === 0
-    ) {
+    const setResultClass =
+        setWinner === matchWinner
+            ? "set-won"
+            : setWinner
+                ? "set-lost"
+                : "";
+
+
+    if (points.length === 0) {
 
         return `
 
@@ -1234,13 +1259,17 @@ function createCurrentSetTable(
                             Satz ${setIndex + 1}
                         </span>
 
-                        <strong>
+                        <small>
+                            Kein Punkteverlauf
+                        </small>
+
+                    </div>
+
+                    <strong>
                             ${set.score1}
                             :
                             ${set.score2}
                         </strong>
-
-                    </div>
 
                 </div>
 
@@ -1316,6 +1345,14 @@ function createCurrentSetTable(
                               (matchWinner === 1 ? 2 : 1)
                                 ? "point-player-loser"
                                 : "";
+			
+			const pointResultClass =
+                        player === matchWinner
+                            ? "point-score-winner"
+                            : player ===
+                              (matchWinner === 1 ? 2 : 1)
+                                ? "point-score-loser"
+                                : "";
 
 
                     return `
@@ -1343,7 +1380,10 @@ function createCurrentSetTable(
 
                             </td>
 
-                            <td class="point-score">
+                            <td class="point-score
+                                    
+                                    ${pointResultClass}
+                                ">
 
                                 ${score1}
                                 :
@@ -1366,29 +1406,24 @@ function createCurrentSetTable(
 
             <div class="set-detail-title">
 
-                <div>
+    <div>
 
-                    <span>
-                        Satz ${setIndex + 1}
-                    </span>
+        <span>
+            Satz ${setIndex + 1}
+        </span>
 
-                    <small>
-                        ${points.length}
-                        Punkte gespielt
-                    </small>
+        <small>
+            ${points.length}
+            Punkte gespielt
+        </small>
 
-                </div>
+    </div>
 
+    <strong class="set-detail-score ${setResultClass}">
+    ${score1} : ${score2}
+</strong>
 
-                <strong>
-
-                    ${set.score1}
-                    :
-                    ${set.score2}
-
-                </strong>
-
-            </div>
+</div>
 
 
             <div class="point-table-wrapper">

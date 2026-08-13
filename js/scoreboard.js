@@ -790,6 +790,80 @@ function finishCurrentSet(winner) {
 
 
 /* =========================
+   SPIEL ABSCHLIESSEN
+========================== */
+
+function finishMatch(winner) {
+
+    if (!activeGame) {
+        return;
+    }
+
+
+    /* =========================
+       GEWINNER
+    ========================== */
+
+    activeGame.winner = winner;
+
+
+    /* =========================
+       SPIEL ABSCHLIESSEN
+    ========================== */
+
+    activeGame.finishedAt =
+        new Date().toISOString();
+
+
+    /* =========================
+       BISHERIGE SPIELE LADEN
+    ========================== */
+
+    const games =
+        JSON.parse(
+            localStorage.getItem(
+                "pingpoint_games"
+            )
+        ) || [];
+
+
+    /* =========================
+       SPIEL SPEICHERN
+    ========================== */
+
+    games.push(activeGame);
+
+
+    localStorage.setItem(
+        "pingpoint_games",
+        JSON.stringify(games)
+    );
+
+
+    /* =========================
+       AKTIVES SPIEL LÖSCHEN
+    ========================== */
+
+    localStorage.removeItem(
+        "pingpoint_active_game"
+    );
+
+
+    activeGame = null;
+
+
+    /* =========================
+       STARTSEITE AKTUALISIEREN
+    ========================== */
+
+    showView("home");
+
+    updateHome();
+
+}
+
+
+/* =========================
    AKTIVES SPIEL SPEICHERN
 ========================== */
 

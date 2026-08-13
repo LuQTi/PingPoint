@@ -62,13 +62,14 @@ function buildApp() {
 
                     <div class="welcome">
 
-                        <p>
-                            Willkommen zurück
-                        </p>
-
                         <h1>
                             Bereit für ein Spiel?
                         </h1>
+
+
+                        <p>
+                            Lass uns loslegen!
+                        </p>
 
                     </div>
 
@@ -104,7 +105,7 @@ function buildApp() {
 
                     <div class="cards">
 
-                        <div class="card">
+                        <button class="card dashboard-card" onclick="showView('players')">
 
                             <div class="card-icon">
                                 👥
@@ -120,14 +121,16 @@ function buildApp() {
                                     0
                                 </span>
 
-                                Spieler
+                                <span id="homePlayerLabel">
+            			    erstellte Spieler
+        			</span>
 
                             </p>
 
-                        </div>
+                        </button>
 
 
-                        <div class="card">
+                        <button class="card dashboard-card" onclick="showView('stats')">
 
                             <div class="card-icon">
                                 📊
@@ -144,12 +147,12 @@ function buildApp() {
                                 </span>
 
                                 <span id="homeMatchLabel">
-            			    Spiele
+            			    gespielte Spiele
         			</span>
 
                             </p>
 
-                        </div>
+                        </button>
 
                     </div>
 
@@ -159,22 +162,27 @@ function buildApp() {
                     </div>
 
 
-                    <div class="card">
+                    <div
+                        class="card"
+    			id="lastGameCard"
+    			onclick="showView('games')"
+    			style="cursor:pointer;"
+		    >
 
-                        <div class="card-icon">
-                            🏓
-                        </div>
+    			<div class="card-icon">  
+                            📚
+    			</div>
 
-                        <h3>
-                            -- Kommt Noch --
-                        </h3>
+    			<h3 id="lastGameTitle">
+        		    Noch kein Spiel
+    			</h3>
 
-                        <p>
-                            Deine vergangenen Spiele
-                            werden hier angezeigt.
-                        </p>
+    			<p id="lastGameDetails">
+        		    Deine vergangenen Spiele
+        		    werden hier angezeigt.
+    			</p>
 
-                    </div>
+		    </div>
 
                 </main>
 
@@ -491,6 +499,21 @@ function updateHome() {
         playerCount.textContent =
             players.length;
 
+        const playerLabel =
+            document.getElementById(
+                "homePlayerLabel"
+            );
+
+
+        if (playerLabel) {
+
+            playerLabel.textContent =
+                players.length === 1
+                    ? "erstellter Spieler"
+                    : "erstellte Spieler";
+
+        }
+
     }
 
 
@@ -518,8 +541,118 @@ function updateHome() {
 
         matchLabel.textContent =
             games.length === 1
-                ? "Spiel"
-                : "Spiele";
+                ? "gespieltes Spiel"
+                : "gespielte Spiele";
+
+    }
+
+}
+
+    /* =========================
+   LETZTES SPIEL
+========================== */
+
+const lastGameTitle =
+    document.getElementById(
+        "lastGameTitle"
+    );
+
+const lastGameDetails =
+    document.getElementById(
+        "lastGameDetails"
+    );
+
+
+const games =
+    JSON.parse(
+        localStorage.getItem(
+            "pingpoint_games"
+        )
+    ) || [];
+
+
+if (
+    lastGameTitle &&
+    lastGameDetails
+) {
+
+    if (games.length === 0) {
+
+        lastGameTitle.textContent =
+            "Noch kein Spiel";
+
+        lastGameDetails.textContent =
+            "Deine vergangenen Spiele werden hier angezeigt.";
+
+    } else {
+
+        /* =========================
+           WIRKLICH LETZTES SPIEL
+        ========================== */
+
+        const lastGame =
+            [...games].sort(
+                (a, b) =>
+                    new Date(b.finishedAt || b.startedAt || 0) -
+                    new Date(a.finishedAt || a.startedAt || 0)
+            )[0];
+
+
+        /* =========================
+           SPIELER
+        ========================== */
+
+        const gamePlayers =
+            lastGame.players || [];
+
+
+        const names =
+            gamePlayers
+                .map(id => getPlayerName(id))
+                .filter(Boolean);
+
+
+        /* =========================
+           TITEL
+        ========================== */
+
+        if (
+            lastGame.mode === "double"
+        ) {
+
+            lastGameTitle.textContent =
+                names.length >= 4
+                    ? `${names[0]} & ${names[1]} vs. ${names[2]} & ${names[3]}`
+                    : "Doppel";
+
+        } else {
+
+            lastGameTitle.textContent =
+                names.length >= 2
+                    ? `${names[0]} vs. ${names[1]}`
+                    : "Einzel";
+
+        }
+
+
+        /* =========================
+           DETAILS
+        ========================== */
+
+        const sets1 =
+            (lastGame.sets || [])
+                .filter(set => set.winner === 1)
+                .length;
+
+
+        const sets2 =
+            (lastGame.sets || [])
+                .filter(set => set.winner === 2)
+                .length;
+
+
+        lastGameDetails.textContent =
+            `${sets1} : ${sets2} · Best of ${lastGame.bestOf} · ${lastGame.pointsToWin} Punkte`;
 
     }
 

@@ -362,9 +362,9 @@ function buildNewGame() {
                 <input
                     id="customPoints"
                     class="input custom-points"
-                    type="number"
-                    min="1"
-                    max="99"
+                    type="text"
+		    inputmode="numeric"
+                    pattern="[0-9]{2}"
                     maxlength="2"
                     placeholder="Punktzahl eingeben"
                     style="display:none;"
@@ -467,6 +467,18 @@ function buildNewGame() {
         </main>
 
     `;
+
+// =========================================================
+    // BUCHSTABEN-BLOCKIERUNG FÜR DAS CUSTOM-INPUT
+    // =========================================================
+    const customPointsInput = document.getElementById("customPoints");
+    if (customPointsInput) {
+    customPointsInput.addEventListener("input", function () {
+        this.value = this.value
+            .replace(/[^0-9]/g, "")
+            .slice(0, 2);
+    });
+}
 
 
     connectGameInputs();

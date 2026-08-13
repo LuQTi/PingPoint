@@ -786,7 +786,7 @@ function renderStatistics() {
                 </div>
 
                 <div class="stat-card-description">
-                    abgeschlossene Spiele
+                    gespielte Spiele
                 </div>
 
             </div>
