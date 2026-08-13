@@ -1,6 +1,11 @@
-/* =========================
+/* =========================================================
+   SPIELER
+========================================================= */
+
+
+/* =========================================================
    SPIELER AUS LOCAL STORAGE
-========================== */
+========================================================= */
 
 let players =
     JSON.parse(
@@ -10,9 +15,137 @@ let players =
     ) || [];
 
 
-/* =========================
-   SPIELER FORMULAR
-========================== */
+/* =========================================================
+   SPIELER-SEITE AUFBAUEN
+========================================================= */
+
+function buildPlayersView() {
+
+    const view =
+        document.getElementById(
+            "playersView"
+        );
+
+    if (!view) {
+        return;
+    }
+
+
+    view.innerHTML = `
+
+        <header class="header">
+
+            <div class="header-top">
+
+                <div class="logo">
+                    Ping<span>Point</span>
+                </div>
+
+                <div class="profile">
+                    👤
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <main class="content">
+
+
+            <div class="page-header">
+
+                <div>
+
+                    <h2>
+                        Spieler
+                    </h2>
+
+                    <p
+                        class="page-subtitle"
+                        id="playerPageSubtitle"
+                    >
+                        0 erstellte Spieler
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="add-button"
+                    onclick="toggleAddPlayer()"
+                >
+                    +
+                </button>
+
+            </div>
+
+
+            <!-- =========================
+                 SPIELER HINZUFÜGEN
+            ========================== -->
+
+            <div
+                id="addPlayerBox"
+                class="add-player-box"
+            >
+
+                <input
+                    id="playerNameInput"
+                    class="input"
+                    type="text"
+                    placeholder="Name des Spielers"
+                    maxlength="10"
+                >
+
+
+                <div class="form-buttons">
+
+                    <button
+                        class="form-button cancel-button"
+                        onclick="toggleAddPlayer()"
+                    >
+                        Abbrechen
+                    </button>
+
+
+                    <button
+                        class="form-button save-button"
+                        onclick="addPlayer()"
+                    >
+                        Spieler hinzufügen
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 SPIELERLISTE
+            ========================== -->
+
+            <div
+                id="playerList"
+                class="player-list"
+            ></div>
+
+
+        </main>
+
+    `;
+
+
+    /* Spieler direkt anzeigen */
+
+    renderPlayers();
+
+}
+
+
+/* =========================================================
+   SPIELER FORMULAR ÖFFNEN / SCHLIESSEN
+========================================================= */
 
 function toggleAddPlayer() {
 
@@ -20,6 +153,11 @@ function toggleAddPlayer() {
         document.getElementById(
             "addPlayerBox"
         );
+
+
+    if (!box) {
+        return;
+    }
 
 
     box.classList.toggle(
@@ -33,20 +171,24 @@ function toggleAddPlayer() {
         )
     ) {
 
-        document
-            .getElementById(
+        const input =
+            document.getElementById(
                 "playerNameInput"
-            )
-            .focus();
+            );
+
+
+        if (input) {
+            input.focus();
+        }
 
     }
 
 }
 
 
-/* =========================
+/* =========================================================
    SPIELER HINZUFÜGEN
-========================== */
+========================================================= */
 
 function addPlayer() {
 
@@ -54,6 +196,11 @@ function addPlayer() {
         document.getElementById(
             "playerNameInput"
         );
+
+
+    if (!input) {
+        return;
+    }
 
 
     const name =
@@ -127,14 +274,17 @@ function addPlayer() {
     renderPlayers();
 
 
+    updatePlayerPageSubtitle();
+
+
     updateHome();
 
 }
 
 
-/* =========================
+/* =========================================================
    SPIELER LÖSCHEN
-========================== */
+========================================================= */
 
 function deletePlayer(id) {
 
@@ -174,14 +324,17 @@ function deletePlayer(id) {
     renderPlayers();
 
 
+    updatePlayerPageSubtitle();
+
+
     updateHome();
 
 }
 
 
-/* =========================
+/* =========================================================
    SPIELER ANZEIGEN
-========================== */
+========================================================= */
 
 function renderPlayers() {
 
@@ -219,6 +372,8 @@ function renderPlayers() {
 
         `;
 
+        updatePlayerPageSubtitle();
+
         return;
 
     }
@@ -240,31 +395,40 @@ function renderPlayers() {
                         <div class="player-item">
 
                             <div class="player-avatar">
-                                ${initial}
+                                ${escapeHtml(initial)}
                             </div>
+
 
                             <div class="player-info">
 
                                 <div class="player-name">
+
                                     ${escapeHtml(
                                         player.name
                                     )}
+
                                 </div>
+
 
                                 <div class="player-stats">
 
                                     ${player.games}
                                     Spiele
+
                                     ·
+
                                     ${player.wins}
                                     Siege
+
                                     ·
+
                                     ${player.losses}
                                     Niederlagen
 
                                 </div>
 
                             </div>
+
 
                             <button
                                 class="delete-player"
@@ -281,12 +445,40 @@ function renderPlayers() {
             )
             .join("");
 
+
+    updatePlayerPageSubtitle();
+
 }
 
 
-/* =========================
+/* =========================================================
+   SPIELER-ANZAHL AUF DER SEITE
+========================================================= */
+
+function updatePlayerPageSubtitle() {
+
+    const subtitle =
+        document.getElementById(
+            "playerPageSubtitle"
+        );
+
+
+    if (!subtitle) {
+        return;
+    }
+
+
+    subtitle.textContent =
+        players.length === 1
+            ? "1 erstellter Spieler"
+            : `${players.length} erstellte Spieler`;
+
+}
+
+
+/* =========================================================
    DATEN SPEICHERN
-========================== */
+========================================================= */
 
 function savePlayers() {
 
@@ -300,13 +492,13 @@ function savePlayers() {
 }
 
 
-/* =========================
+/* =========================================================
    ENTER = SPIELER HINZUFÜGEN
-========================== */
+========================================================= */
 
 document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+    "keydown",
+    function (event) {
 
         const input =
             document.getElementById(
@@ -314,22 +506,17 @@ document.addEventListener(
             );
 
 
-        if (input) {
+        if (!input) {
+            return;
+        }
 
-            input.addEventListener(
-                "keydown",
-                function (event) {
 
-                    if (
-                        event.key === "Enter"
-                    ) {
+        if (
+            event.key === "Enter" &&
+            document.activeElement === input
+        ) {
 
-                        addPlayer();
-
-                    }
-
-                }
-            );
+            addPlayer();
 
         }
 

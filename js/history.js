@@ -1,11 +1,11 @@
-/* =========================
+/* =========================================================
    SPIELHISTORIE
-========================== */
+========================================================= */
 
 
-/* =========================
-   HISTORIE LADEN
-========================== */
+/* =========================================================
+   SPIELHISTORIE LADEN
+========================================================= */
 
 function getGameHistory() {
 
@@ -18,9 +18,60 @@ function getGameHistory() {
 }
 
 
-/* =========================
+/* =========================================================
+   SPIELE-SEITE AUFBAUEN
+========================================================= */
+
+function buildGamesView() {
+
+    const view =
+        document.getElementById(
+            "gamesView"
+        );
+
+    if (!view) {
+        return;
+    }
+
+
+    view.innerHTML = `
+
+        <header class="header">
+
+            <div class="header-top">
+
+                <div class="logo">
+                    Ping<span>Point</span>
+                </div>
+
+                <div class="profile">
+                    👤
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <main class="content">
+
+            <div
+                id="gamesContent"
+                class="games-content"
+            ></div>
+
+        </main>
+
+    `;
+
+
+    renderGames();
+
+}
+
+/* =========================================================
    SPIELERSTATISTIK AKTUALISIEREN
-========================== */
+========================================================= */
 
 function updatePlayerStats(match) {
 
@@ -28,10 +79,6 @@ function updatePlayerStats(match) {
         return;
     }
 
-
-    /*
-        Punkte aus allen Sätzen berechnen
-    */
 
     let totalPoints1 = 0;
     let totalPoints2 = 0;
@@ -49,10 +96,6 @@ function updatePlayerStats(match) {
 
     });
 
-
-    /*
-        SPIELER-ID DER TEAMS
-    */
 
     let team1Players = [];
     let team2Players = [];
@@ -72,15 +115,6 @@ function updatePlayerStats(match) {
 
     else {
 
-        /*
-            Doppel:
-
-            players[0] = Team 1 Spieler 1
-            players[1] = Team 1 Spieler 2
-            players[2] = Team 2 Spieler 1
-            players[3] = Team 2 Spieler 2
-        */
-
         team1Players = [
             match.players[0],
             match.players[1]
@@ -93,10 +127,6 @@ function updatePlayerStats(match) {
 
     }
 
-
-    /*
-        SPIELER AKTUALISIEREN
-    */
 
     players.forEach(player => {
 
@@ -124,10 +154,6 @@ function updatePlayerStats(match) {
         }
 
 
-        /*
-            Grundwerte sicherstellen
-        */
-
         player.games =
             Number(player.games || 0);
 
@@ -144,16 +170,8 @@ function updatePlayerStats(match) {
             Number(player.pointsAgainst || 0);
 
 
-        /*
-            Spiel zählt für jeden
-        */
-
         player.games++;
 
-
-        /*
-            TEAM 1
-        */
 
         if (isTeam1) {
 
@@ -165,23 +183,15 @@ function updatePlayerStats(match) {
 
 
             if (match.winner === 1) {
-
                 player.wins++;
-
             }
 
             else {
-
                 player.losses++;
-
             }
 
         }
 
-
-        /*
-            TEAM 2
-        */
 
         if (isTeam2) {
 
@@ -193,15 +203,11 @@ function updatePlayerStats(match) {
 
 
             if (match.winner === 2) {
-
                 player.wins++;
-
             }
 
             else {
-
                 player.losses++;
-
             }
 
         }
@@ -209,45 +215,28 @@ function updatePlayerStats(match) {
     });
 
 
-    /*
-        Spieler speichern
-    */
-
     savePlayers();
 
-
-    /*
-        Startseite aktualisieren
-    */
 
     if (
         typeof updateHome === "function"
     ) {
-
         updateHome();
-
     }
 
-
-    /*
-        Statistik aktualisieren,
-        falls die Seite gerade geöffnet ist
-    */
 
     if (
         typeof renderStatistics === "function"
     ) {
-
         renderStatistics();
-
     }
 
 }
 
 
-/* =========================
+/* =========================================================
    SPIEL BEENDEN
-========================== */
+========================================================= */
 
 function finishMatch(winner) {
 
@@ -269,9 +258,10 @@ function finishMatch(winner) {
             activeGame.sets.map(
                 set => ({
                     ...set,
-                    points: Array.isArray(set.points)
-                        ? [...set.points]
-                        : []
+                    points:
+                        Array.isArray(set.points)
+                            ? [...set.points]
+                            : []
                 })
             )
 
@@ -331,10 +321,96 @@ function finishMatch(winner) {
 
 }
 
-
 /* =========================
-   SPIELE ANZEIGEN
+   SPIEL LÖSCHEN
 ========================== */
+
+function deleteGame(index) {
+
+    const history = getGameHistory();
+
+    if (
+        !history ||
+        !history[index]
+    ) {
+        return;
+    }
+
+
+    const match = history[index];
+
+    const teams = getMatchTeams(match);
+
+
+    const confirmed = confirm(
+        `Möchtest du das Spiel "${teams.team1} gegen ${teams.team2}" wirklich löschen?`
+    );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    /*
+        Spiel aus der Historie entfernen
+    */
+
+    history.splice(
+        index,
+        1
+    );
+
+
+    /*
+        Neue Historie speichern
+    */
+
+    localStorage.setItem(
+        "pingpoint_games",
+        JSON.stringify(history)
+    );
+
+
+    /*
+        Liste aktualisieren
+    */
+
+    renderGames();
+
+
+    /*
+        Startseite aktualisieren
+    */
+
+    if (
+        typeof updateHome === "function"
+    ) {
+
+        updateHome();
+
+    }
+
+
+    /*
+        Statistik aktualisieren,
+        falls Statistik gerade existiert
+    */
+
+    if (
+        typeof renderStatistics === "function"
+    ) {
+
+        renderStatistics();
+
+    }
+
+}
+
+
+/* =========================================================
+   SPIELE ANZEIGEN
+========================================================= */
 
 function renderGames() {
 
@@ -342,7 +418,6 @@ function renderGames() {
         document.getElementById(
             "gamesContent"
         );
-
 
     if (!container) {
         return;
@@ -368,7 +443,7 @@ function renderGames() {
                     </h2>
 
                     <p class="page-subtitle">
-                        Deine vergangenen Spiele
+                        0 gespielte Spiele
                     </p>
 
                 </div>
@@ -397,6 +472,7 @@ function renderGames() {
         `;
 
         return;
+
     }
 
 
@@ -411,12 +487,15 @@ function renderGames() {
                 </h2>
 
                 <p class="page-subtitle">
+
                     ${history.length}
+
                     ${
                         history.length === 1
                             ? "abgeschlossenes Spiel"
                             : "abgeschlossene Spiele"
                     }
+
                 </p>
 
             </div>
@@ -426,15 +505,17 @@ function renderGames() {
 
         <div class="games-list">
 
-            ${history
-                .map(
-                    (match, index) =>
-                        createGameCard(
-                            match,
-                            index
-                        )
-                )
-                .join("")}
+            ${
+                history
+                    .map(
+                        (match, index) =>
+                            createGameCard(
+                                match,
+                                index
+                            )
+                    )
+                    .join("")
+            }
 
         </div>
 
@@ -442,15 +523,25 @@ function renderGames() {
 
 }
 
+
+/* =========================================================
+   SPIELKARTE TEAM FORMATIEREN
+========================================================= */
+
 function formatGameCardTeam(name) {
 
     if (!name) {
         return "";
     }
 
-    const parts = name.split(" & ");
 
-    if (parts.length === 2) {
+    const parts =
+        name.split(" & ");
+
+
+    if (
+        parts.length === 2
+    ) {
 
         return (
             escapeHtml(parts[0]) +
@@ -460,12 +551,15 @@ function formatGameCardTeam(name) {
 
     }
 
+
     return escapeHtml(name);
+
 }
 
-/* =========================
-   SPIELKARTE
-========================== */
+
+/* =========================================================
+   SPIELKARTE ERSTELLEN
+========================================================= */
 
 function createGameCard(
     match,
@@ -506,7 +600,7 @@ function createGameCard(
 
     return `
 
-        <button
+        <div 
             class="game-card"
             onclick="openGameDetails(${index})"
         >
@@ -525,10 +619,24 @@ function createGameCard(
 
 
                 <span class="game-date">
+
                     ${formatDate(
                         match.finishedAt
                     )}
+
                 </span>
+
+	        
+		<button
+                    class="delete-game"
+                    onclick="
+                        event.stopPropagation();
+                        deleteGame(${index});
+                    "
+                    title="Spiel löschen"
+                >
+                    🗑
+                </button>
 
             </div>
 
@@ -537,7 +645,7 @@ function createGameCard(
 
                 <div class="
                     game-player
-		    game-player-left
+                    game-player-left
                     ${
                         match.winner === 1
                             ? "game-player-winner"
@@ -546,9 +654,11 @@ function createGameCard(
                 ">
 
                     <strong>
+
                         ${formatGameCardTeam(
                             teams.team1
                         )}
+
                     </strong>
 
                     <span>
@@ -578,9 +688,11 @@ function createGameCard(
                     </span>
 
                     <strong>
+
                         ${formatGameCardTeam(
                             teams.team2
                         )}
+
                     </strong>
 
                 </div>
@@ -591,28 +703,34 @@ function createGameCard(
             <div class="game-card-footer">
 
                 <span class="game-winner">
+
                     🏆
+
                     ${escapeHtml(
                         winner
                     )}
+
                 </span>
 
+
                 <span class="game-details-link">
+
                     Details ansehen →
+
                 </span>
 
             </div>
 
-        </button>
+        </div>
 
     `;
 
 }
 
 
-/* =========================
-   SPIELER / TEAMS
-========================== */
+/* =========================================================
+   SPIELER / TEAMS ERMITTELN
+========================================================= */
 
 function getMatchTeams(match) {
 
@@ -626,13 +744,13 @@ function getMatchTeams(match) {
                 getPlayerName(
                     match.players?.[0]
                 ) ||
-                "Spieler 1",
+                "gelöschter Spieler",
 
             team2:
                 getPlayerName(
                     match.players?.[1]
                 ) ||
-                "Spieler 2"
+                "gelöschter Spieler"
 
         };
 
@@ -647,15 +765,20 @@ function getMatchTeams(match) {
                 getPlayerName(
                     match.players?.[0]
                 ) ||
-                "Spieler 1"
+                "gelöschter Spieler"
             )
+
             +
-            " & " +
+
+            " & "
+
+            +
+
             (
                 getPlayerName(
                     match.players?.[1]
                 ) ||
-                "Spieler 2"
+                "gelöschter Spieler"
             ),
 
 
@@ -665,15 +788,20 @@ function getMatchTeams(match) {
                 getPlayerName(
                     match.players?.[2]
                 ) ||
-                "Spieler 3"
+                "gelöschter Spieler"
             )
+
             +
-            " & " +
+
+            " & "
+
+            +
+
             (
                 getPlayerName(
                     match.players?.[3]
                 ) ||
-                "Spieler 4"
+                "gelöschter Spieler"
             )
 
     };
@@ -681,13 +809,15 @@ function getMatchTeams(match) {
 }
 
 
-/* =========================
+/* =========================================================
    DETAILSEITE ÖFFNEN
-========================== */
+========================================================= */
 
 function openGameDetails(index) {
 
-    const history = getGameHistory();
+    const history =
+        getGameHistory();
+
 
     if (
         !history ||
@@ -696,16 +826,18 @@ function openGameDetails(index) {
         return;
     }
 
+
     renderGameDetails(
         index,
         0
     );
+
 }
 
 
-/* =========================
+/* =========================================================
    DETAILSEITE
-========================== */
+========================================================= */
 
 function renderGameDetails(
     matchIndex,
@@ -716,6 +848,7 @@ function renderGameDetails(
         document.getElementById(
             "gamesContent"
         );
+
 
     if (!container) {
         return;
@@ -731,17 +864,24 @@ function renderGameDetails(
 
 
     if (!match) {
+
         renderGames();
+
         return;
+
     }
 
 
     const teams =
-        getMatchTeams(match);
+        getMatchTeams(
+            match
+        );
 
 
     const sets =
-        Array.isArray(match.finalSets)
+        Array.isArray(
+            match.finalSets
+        )
             ? match.finalSets
             : [];
 
@@ -795,6 +935,7 @@ function renderGameDetails(
                 ←
             </button>
 
+
             <div>
 
                 <h2>
@@ -833,7 +974,7 @@ function renderGameDetails(
 
                 <div class="
                     result-team
-		    result-team-left
+                    result-team-left
                     ${
                         match.winner === 1
                             ? "result-winner"
@@ -1025,10 +1166,15 @@ function renderGameDetails(
                                 `
                             )
                             .join("")
+
                         : `
+
                             <div class="games-empty">
+
                                 Keine Sätze vorhanden.
+
                             </div>
+
                         `
                 }
 
@@ -1043,17 +1189,19 @@ function renderGameDetails(
                     currentSet,
                     safeSet,
                     teams,
-		    match.winner
+                    match.winner
                 )
                 : ""
         }
 
     `;
-}	
 
-/* =========================
+}
+
+
+/* =========================================================
    SATZTABELLE
-========================== */
+========================================================= */
 
 function createCurrentSetTable(
     set,
@@ -1069,11 +1217,6 @@ function createCurrentSetTable(
             ? set.points
             : [];
 
-
-    /*
-        Falls alter Spielstand
-        keine Punktdaten besitzt.
-    */
 
     if (
         points.length === 0
@@ -1148,17 +1291,13 @@ function createCurrentSetTable(
                     if (
                         player === 1
                     ) {
-
                         score1++;
-
                     }
 
                     else if (
                         player === 2
                     ) {
-
                         score2++;
-
                     }
 
 
@@ -1169,12 +1308,14 @@ function createCurrentSetTable(
                                 ? teams.team2
                                 : "Unbekannt";
 
-		    const playerResultClass =
-   			 player === matchWinner
-       			 ? "point-player-winner"
-        		 : player === (matchWinner === 1 ? 2 : 1)
-           		 ? "point-player-loser"
-            		 : "";
+
+                    const playerResultClass =
+                        player === matchWinner
+                            ? "point-player-winner"
+                            : player ===
+                              (matchWinner === 1 ? 2 : 1)
+                                ? "point-player-loser"
+                                : "";
 
 
                     return `
@@ -1188,15 +1329,11 @@ function createCurrentSetTable(
                             <td>
 
                                 <span class="
-    				    point-player
-    				    ${playerResultClass}
-				">
+                                    point-player
+                                    ${playerResultClass}
+                                ">
 
-                                    ${
-                                        player === 1
-                                            ? "●"
-                                            : "●"
-                                    }
+                                    ●
 
                                     ${escapeHtml(
                                         playerName
@@ -1244,9 +1381,11 @@ function createCurrentSetTable(
 
 
                 <strong>
+
                     ${set.score1}
                     :
                     ${set.score2}
+
                 </strong>
 
             </div>
@@ -1294,13 +1433,11 @@ function createCurrentSetTable(
 }
 
 
-/* =========================
-   PUNKT SPIELER ERMITTELN
-========================== */
+/* =========================================================
+   PUNKT-SPIELER ERMITTELN
+========================================================= */
 
-function getPointPlayer(
-    point
-) {
+function getPointPlayer(point) {
 
     if (
         typeof point === "number"
@@ -1332,13 +1469,11 @@ function getPointPlayer(
 }
 
 
-/* =========================
+/* =========================================================
    DATUM
-========================== */
+========================================================= */
 
-function formatDate(
-    value
-) {
+function formatDate(value) {
 
     if (!value) {
         return "-";
@@ -1372,13 +1507,11 @@ function formatDate(
 }
 
 
-/* =========================
+/* =========================================================
    DATUM + UHRZEIT
-========================== */
+========================================================= */
 
-function formatDateTime(
-    value
-) {
+function formatDateTime(value) {
 
     if (!value) {
         return "-";
@@ -1414,13 +1547,11 @@ function formatDateTime(
 }
 
 
-/* =========================
-   DAUER
-========================== */
+/* =========================================================
+   SPIELDAUER
+========================================================= */
 
-function getMatchDuration(
-    match
-) {
+function getMatchDuration(match) {
 
     if (
         !match.startedAt ||
@@ -1449,8 +1580,12 @@ function getMatchDuration(
         start.getTime();
 
 
-    if (ms <= 0) {
+    if (
+        ms <= 0
+    ) {
+
         return "-";
+
     }
 
 
@@ -1479,17 +1614,3 @@ function getMatchDuration(
     );
 
 }
-
-
-/* =========================
-   INITIALISIERUNG
-========================== */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        renderGames();
-
-    }
-);

@@ -1,16 +1,19 @@
+/* =========================================================
+   NEUES SPIEL
+========================================================= */
+
+
 /* =========================
    NEUES SPIEL ÖFFNEN
 ========================== */
 
 function showNewGame() {
 
-    showView(
-        "newGame"
-    );
+    showView("newGame");
 
+    buildNewGame();
 
     populatePlayerSelects();
-
 
     updateGamePreview();
 
@@ -18,8 +21,458 @@ function showNewGame() {
 
 
 /* =========================
-   SPIELMODUS
+   NEUES SPIEL AUFBAUEN
 ========================== */
+
+function buildNewGame() {
+
+    const view =
+        document.getElementById(
+            "newGameView"
+        );
+
+    if (!view) {
+        return;
+    }
+
+
+    view.innerHTML = `
+
+        <header class="header">
+
+            <div class="header-top">
+
+                <div class="logo">
+                    Ping<span>Point</span>
+                </div>
+
+                <button
+                    class="back-button"
+                    onclick="showView('home')"
+                >
+                    ←
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <main class="content">
+
+
+            <!-- =========================
+                 SEITENKOPF
+            ========================== -->
+
+            <div class="page-header">
+
+                <div>
+
+                    <h2>
+                        Neues Spiel
+                    </h2>
+
+                    <p class="page-subtitle">
+                        Konfiguriere dein Spiel
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 SPIELMODUS
+            ========================== -->
+
+            <div class="setting-section">
+
+                <div class="setting-title">
+                    Spielmodus
+                </div>
+
+
+                <div class="option-grid">
+
+
+                    <button
+                        class="option-card selected"
+                        id="singleOption"
+                        onclick="selectMode('single')"
+                    >
+
+                        <div class="option-icon">
+                            👤
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                Einzel
+                            </strong>
+
+                            <span>
+                                1 gegen 1
+                            </span>
+
+                        </div>
+
+                    </button>
+
+
+                    <button
+                        class="option-card"
+                        id="doubleOption"
+                        onclick="selectMode('double')"
+                    >
+
+                        <div class="option-icon">
+                            👥
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                Doppel
+                            </strong>
+
+                            <span>
+                                2 gegen 2
+                            </span>
+
+                        </div>
+
+                    </button>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 SPIELER
+            ========================== -->
+
+            <div class="setting-section">
+
+                <div class="setting-title">
+                    Spieler
+                </div>
+
+
+                <!-- EINZEL -->
+
+                <div
+                    id="singlePlayers"
+                    class="player-selection"
+                >
+
+                    <div class="select-group">
+
+                        <label>
+                            Spieler 1
+                        </label>
+
+                        <select
+                            id="player1"
+                            class="select-input"
+                        ></select>
+
+                    </div>
+
+
+                    <div class="vs">
+                        VS
+                    </div>
+
+
+                    <div class="select-group">
+
+                        <label>
+                            Spieler 2
+                        </label>
+
+                        <select
+                            id="player2"
+                            class="select-input"
+                        ></select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DOPPEL -->
+
+                <div
+                    id="doublePlayers"
+                    class="double-selection"
+                    style="display:none;"
+                >
+
+                    <div class="team-label">
+                        Team 1
+                    </div>
+
+
+                    <div class="team-selects">
+
+                        <select
+                            id="team1player1"
+                            class="select-input"
+                        ></select>
+
+
+                        <select
+                            id="team1player2"
+                            class="select-input"
+                        ></select>
+
+                    </div>
+
+
+                    <div class="vs team-vs">
+                        VS
+                    </div>
+
+
+                    <div class="team-label">
+                        Team 2
+                    </div>
+
+
+                    <div class="team-selects">
+
+                        <select
+                            id="team2player1"
+                            class="select-input"
+                        ></select>
+
+
+                        <select
+                            id="team2player2"
+                            class="select-input"
+                        ></select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 SÄTZE
+            ========================== -->
+
+            <div class="setting-section">
+
+                <div class="setting-title">
+                    Sätze
+                </div>
+
+
+                <div class="segmented-control">
+
+
+                    <button
+                        class="segment active"
+                        id="bestOf3"
+                        onclick="selectBestOf(3)"
+                    >
+                        Best of 3
+                    </button>
+
+
+                    <button
+                        class="segment"
+                        id="bestOf5"
+                        onclick="selectBestOf(5)"
+                    >
+                        Best of 5
+                    </button>
+
+
+                    <button
+                        class="segment"
+                        id="bestOf7"
+                        onclick="selectBestOf(7)"
+                    >
+                        Best of 7
+                    </button>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 PUNKTE
+            ========================== -->
+
+            <div class="setting-section">
+
+                <div class="setting-title">
+                    Punkte pro Satz
+                </div>
+
+
+                <div class="points-options">
+
+
+                    <button
+                        class="point-option active"
+                        id="points11"
+                        onclick="selectPoints(11)"
+                    >
+                        11
+                    </button>
+
+
+                    <button
+                        class="point-option"
+                        id="points21"
+                        onclick="selectPoints(21)"
+                    >
+                        21
+                    </button>
+
+
+                    <button
+                        class="point-option"
+                        id="pointsCustom"
+                        onclick="selectPoints('custom')"
+                    >
+                        Eigene
+                    </button>
+
+
+                </div>
+
+
+                <input
+                    id="customPoints"
+                    class="input custom-points"
+                    type="number"
+                    min="1"
+                    max="99"
+                    maxlength="2"
+                    placeholder="Punktzahl eingeben"
+                    style="display:none;"
+                >
+
+
+                <p class="setting-hint">
+                    Ein Satz wird mit mindestens 2 Punkten
+                    Vorsprung gewonnen.
+                </p>
+
+            </div>
+
+
+            <!-- =========================
+                 ZUSAMMENFASSUNG
+            ========================== -->
+
+            <div class="game-preview">
+
+
+                <div class="preview-title">
+                    Deine Einstellungen
+                </div>
+
+
+                <div class="preview-row">
+
+                    <span>
+                        Modus
+                    </span>
+
+                    <strong id="previewMode">
+                        Einzel
+                    </strong>
+
+                </div>
+
+
+                <div class="preview-row">
+
+                    <span>
+                        Spieler
+                    </span>
+
+                    <strong id="previewPlayers">
+                        Noch nicht ausgewählt
+                    </strong>
+
+                </div>
+
+
+                <div class="preview-row">
+
+                    <span>
+                        Sätze
+                    </span>
+
+                    <strong id="previewBestOf">
+                        Best of 3
+                    </strong>
+
+                </div>
+
+
+                <div class="preview-row">
+
+                    <span>
+                        Punkte
+                    </span>
+
+                    <strong id="previewPoints">
+                        11
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- =========================
+                 SPIEL STARTEN
+            ========================== -->
+
+            <button
+                class="start-game-button"
+                onclick="startConfiguredGame()"
+            >
+
+                <span>
+                    🏓
+                </span>
+
+                Spiel starten
+
+            </button>
+
+
+        </main>
+
+    `;
+
+
+    connectGameInputs();
+
+}
+
+
+/* =========================================================
+   SPIELMODUS
+========================================================= */
 
 function selectMode(mode) {
 
@@ -27,57 +480,80 @@ function selectMode(mode) {
         mode;
 
 
-    document
-        .getElementById(
+    const singleOption =
+        document.getElementById(
             "singleOption"
-        )
-        .classList.toggle(
+        );
+
+
+    const doubleOption =
+        document.getElementById(
+            "doubleOption"
+        );
+
+
+    const singlePlayers =
+        document.getElementById(
+            "singlePlayers"
+        );
+
+
+    const doublePlayers =
+        document.getElementById(
+            "doublePlayers"
+        );
+
+
+    if (singleOption) {
+
+        singleOption.classList.toggle(
             "selected",
             mode === "single"
         );
 
+    }
 
-    document
-        .getElementById(
-            "doubleOption"
-        )
-        .classList.toggle(
+
+    if (doubleOption) {
+
+        doubleOption.classList.toggle(
             "selected",
             mode === "double"
         );
 
-
-    document
-        .getElementById(
-            "singlePlayers"
-        )
-        .style.display =
-        mode === "single"
-            ? "grid"
-            : "none";
+    }
 
 
-    document
-        .getElementById(
-            "doublePlayers"
-        )
-        .style.display =
-        mode === "double"
-            ? "block"
-            : "none";
+    if (singlePlayers) {
+
+        singlePlayers.style.display =
+            mode === "single"
+                ? "grid"
+                : "none";
+
+    }
+
+
+    if (doublePlayers) {
+
+        doublePlayers.style.display =
+            mode === "double"
+                ? "block"
+                : "none";
+
+    }
 
 
     populatePlayerSelects();
-
 
     updateGamePreview();
 
 }
 
 
-/* =========================
+/* =========================================================
    SPIELER AUSWÄHLEN
-========================== */
+========================================================= */
 
 function populatePlayerSelects() {
 
@@ -151,7 +627,9 @@ function populatePlayerSelects() {
                         String(
                             player.id
                         ) ===
-                        currentValue
+                        String(
+                            currentValue
+                        )
                 )
             ) {
 
@@ -166,9 +644,9 @@ function populatePlayerSelects() {
 }
 
 
-/* =========================
+/* =========================================================
    BEST OF
-========================== */
+========================================================= */
 
 function selectBestOf(number) {
 
@@ -188,13 +666,19 @@ function selectBestOf(number) {
         );
 
 
-    document
-        .getElementById(
+    const selected =
+        document.getElementById(
             "bestOf" + number
-        )
-        .classList.add(
+        );
+
+
+    if (selected) {
+
+        selected.classList.add(
             "active"
         );
+
+    }
 
 
     updateGamePreview();
@@ -202,9 +686,9 @@ function selectBestOf(number) {
 }
 
 
-/* =========================
+/* =========================================================
    PUNKTE
-========================== */
+========================================================= */
 
 function selectPoints(points) {
 
@@ -220,25 +704,37 @@ function selectPoints(points) {
         );
 
 
+    const customInput =
+        document.getElementById(
+            "customPoints"
+        );
+
+
     if (
         points === "custom"
     ) {
 
-        document
-            .getElementById(
+        const customButton =
+            document.getElementById(
                 "pointsCustom"
-            )
-            .classList.add(
-                "active"
             );
 
 
-        document
-            .getElementById(
-                "customPoints"
-            )
-            .style.display =
-            "block";
+        if (customButton) {
+
+            customButton.classList.add(
+                "active"
+            );
+
+        }
+
+
+        if (customInput) {
+
+            customInput.style.display =
+                "block";
+
+        }
 
 
         gameConfig.pointsToWin =
@@ -248,21 +744,27 @@ function selectPoints(points) {
 
     else {
 
-        document
-            .getElementById(
+        const pointButton =
+            document.getElementById(
                 "points" + points
-            )
-            .classList.add(
-                "active"
             );
 
 
-        document
-            .getElementById(
-                "customPoints"
-            )
-            .style.display =
-            "none";
+        if (pointButton) {
+
+            pointButton.classList.add(
+                "active"
+            );
+
+        }
+
+
+        if (customInput) {
+
+            customInput.style.display =
+                "none";
+
+        }
 
 
         gameConfig.pointsToWin =
@@ -276,10 +778,9 @@ function selectPoints(points) {
 }
 
 
-/* =========================
-   AUSGEWÄHLTEN SPIELER
-   NAMEN HOLEN
-========================== */
+/* =========================================================
+   SPIELERNAME
+========================================================= */
 
 function getPlayerName(id) {
 
@@ -298,9 +799,9 @@ function getPlayerName(id) {
 }
 
 
-/* =========================
+/* =========================================================
    VORSCHAU
-========================== */
+========================================================= */
 
 function updateGamePreview() {
 
@@ -340,16 +841,28 @@ function updateGamePreview() {
     }
 
 
+    /* =========================
+       MODUS
+    ========================== */
+
     previewMode.textContent =
         gameConfig.mode === "single"
             ? "Einzel"
             : "Doppel";
 
 
+    /* =========================
+       BEST OF
+    ========================== */
+
     previewBestOf.textContent =
         "Best of " +
         gameConfig.bestOf;
 
+
+    /* =========================
+       PUNKTE
+    ========================== */
 
     let points =
         gameConfig.pointsToWin;
@@ -378,6 +891,10 @@ function updateGamePreview() {
     previewPoints.textContent =
         points;
 
+
+    /* =========================
+       SPIELER
+    ========================== */
 
     let playerText =
         "Noch nicht ausgewählt";
@@ -490,11 +1007,15 @@ function updateGamePreview() {
 }
 
 
-/* =========================
+/* =========================================================
    SPIEL STARTEN
-========================== */
+========================================================= */
 
 function startConfiguredGame() {
+
+    /* =========================
+       GENÜGEND SPIELER
+    ========================== */
 
     if (
         players.length <
@@ -516,6 +1037,10 @@ function startConfiguredGame() {
     }
 
 
+    /* =========================
+       PUNKTZAHL
+    ========================== */
+
     let points =
         gameConfig.pointsToWin;
 
@@ -524,13 +1049,15 @@ function startConfiguredGame() {
         points === null
     ) {
 
+        const customInput =
+            document.getElementById(
+                "customPoints"
+            );
+
+
         points =
             Number(
-                document
-                    .getElementById(
-                        "customPoints"
-                    )
-                    .value
+                customInput?.value
             );
 
 
@@ -550,32 +1077,40 @@ function startConfiguredGame() {
     }
 
 
+    /* =========================
+       SPIELER
+    ========================== */
+
     let selectedPlayers = [];
 
+
+    /* =========================
+       EINZEL
+    ========================== */
 
     if (
         gameConfig.mode === "single"
     ) {
 
-        const p1 =
+        const player1 =
             document
                 .getElementById(
                     "player1"
                 )
-                .value;
+                ?.value;
 
 
-        const p2 =
+        const player2 =
             document
                 .getElementById(
                     "player2"
                 )
-                .value;
+                ?.value;
 
 
         if (
-            !p1 ||
-            !p2
+            !player1 ||
+            !player2
         ) {
 
             alert(
@@ -588,7 +1123,7 @@ function startConfiguredGame() {
 
 
         if (
-            p1 === p2
+            player1 === player2
         ) {
 
             alert(
@@ -602,13 +1137,18 @@ function startConfiguredGame() {
 
         selectedPlayers = [
 
-            Number(p1),
+            Number(player1),
 
-            Number(p2)
+            Number(player2)
 
         ];
 
     }
+
+
+    /* =========================
+       DOPPEL
+    ========================== */
 
     else {
 
@@ -617,7 +1157,7 @@ function startConfiguredGame() {
                 .getElementById(
                     "team1player1"
                 )
-                .value;
+                ?.value;
 
 
         const team1player2 =
@@ -625,7 +1165,7 @@ function startConfiguredGame() {
                 .getElementById(
                     "team1player2"
                 )
-                .value;
+                ?.value;
 
 
         const team2player1 =
@@ -633,7 +1173,7 @@ function startConfiguredGame() {
                 .getElementById(
                     "team2player1"
                 )
-                .value;
+                ?.value;
 
 
         const team2player2 =
@@ -641,7 +1181,7 @@ function startConfiguredGame() {
                 .getElementById(
                     "team2player2"
                 )
-                .value;
+                ?.value;
 
 
         if (
@@ -735,6 +1275,10 @@ function startConfiguredGame() {
     };
 
 
+    /* =========================
+       SPEICHERN
+    ========================== */
+
     localStorage.setItem(
 
         "pingpoint_active_game",
@@ -746,55 +1290,60 @@ function startConfiguredGame() {
     );
 
 
+    /* =========================
+       SCOREBOARD ÖFFNEN
+    ========================== */
+
     openScoreboard();
 
 }
 
 
-/* =========================
-   SELECT ÄNDERUNGEN
-========================== */
+/* =========================================================
+   INPUTS VERBINDEN
+========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+function connectGameInputs() {
 
-        [
+    const ids = [
 
-            "player1",
-            "player2",
-            "team1player1",
-            "team1player2",
-            "team2player1",
-            "team2player2",
-            "customPoints"
+        "player1",
+        "player2",
+        "team1player1",
+        "team1player2",
+        "team2player1",
+        "team2player2",
+        "customPoints"
 
-        ].forEach(
-            id => {
-
-                const element =
-                    document.getElementById(
-                        id
-                    );
+    ];
 
 
-                if (element) {
+    ids.forEach(
+        id => {
 
-                    element.addEventListener(
-                        "change",
-                        updateGamePreview
-                    );
+            const element =
+                document.getElementById(
+                    id
+                );
 
 
-                    element.addEventListener(
-                        "input",
-                        updateGamePreview
-                    );
-
-                }
-
+            if (!element) {
+                return;
             }
-        );
 
-    }
-);
+
+            element.addEventListener(
+                "change",
+                updateGamePreview
+            );
+
+
+            element.addEventListener(
+                "input",
+                updateGamePreview
+            );
+
+        }
+    );
+
+}

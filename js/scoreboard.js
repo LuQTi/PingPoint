@@ -171,39 +171,43 @@ function buildScoreboard() {
 
             <!-- SATZSTAND -->
 
-            <div class="set-score-card">
+<div class="set-score-card">
 
-                <div class="set-team">
+    <div class="set-team set-team-left">
 
-                    <span id="scoreTeam1Name">
-                        Spieler 1
-                    </span>
+        <span id="scoreTeam1Name">
+            Spieler 1
+        </span>
 
-                    <strong id="scoreSets1">
-                        0
-                    </strong>
-
-                </div>
+    </div>
 
 
-                <div class="set-divider">
-                    :
-                </div>
+    <div class="set-result">
+
+        <strong id="scoreSets1">
+            0
+        </strong>
+
+        <span class="set-divider">
+            :
+        </span>
+
+        <strong id="scoreSets2">
+            0
+        </strong>
+
+    </div>
 
 
-                <div class="set-team">
+    <div class="set-team set-team-right">
 
-                    <strong id="scoreSets2">
-                        0
-                    </strong>
+        <span id="scoreTeam2Name">
+            Spieler 2
+        </span>
 
-                    <span id="scoreTeam2Name">
-                        Spieler 2
-                    </span>
+    </div>
 
-                </div>
-
-            </div>
+</div>
 
 
             <!-- PUNKTE -->

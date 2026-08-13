@@ -3,9 +3,9 @@
 ========================================================= */
 
 
-/*
-    Alle abgeschlossenen Spiele laden
-*/
+/* =========================================================
+   SPIELE AUS LOCAL STORAGE LADEN
+========================================================= */
 
 function getStatisticsGames() {
 
@@ -18,9 +18,83 @@ function getStatisticsGames() {
 }
 
 
-/*
-    Statistik für ALLE Spieler berechnen
-*/
+/* =========================================================
+   STATISTIK-SEITE AUFBAUEN
+========================================================= */
+
+function buildStatisticsView() {
+
+    const view =
+        document.getElementById(
+            "statsView"
+        );
+
+    if (!view) {
+        return;
+    }
+
+
+    view.innerHTML = `
+
+        <header class="header">
+
+            <div class="header-top">
+
+                <div class="logo">
+                    Ping<span>Point</span>
+                </div>
+
+                <div class="profile">
+                    👤
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <main class="content">
+
+            <div class="page-header">
+
+                <div>
+
+                    <h2>
+                        Statistik
+                    </h2>
+
+                    <p class="page-subtitle">
+                        Deine Spielstatistiken
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 STATISTIK-INHALT
+            ========================== -->
+
+            <div
+                class="stats-content"
+                id="statsContent"
+            ></div>
+
+
+        </main>
+
+    `;
+
+
+    renderStatistics();
+
+}
+
+
+/* =========================================================
+   SPIELERSTATISTIK BERECHNEN
+========================================================= */
 
 function calculatePlayerStatistics() {
 
@@ -28,12 +102,12 @@ function calculatePlayerStatistics() {
         getStatisticsGames();
 
 
+    const stats = {};
+
+
     /*
         Grunddaten für jeden Spieler
     */
-
-    const stats = {};
-
 
     players.forEach(
         player => {
@@ -61,32 +135,24 @@ function calculatePlayerStatistics() {
 
 
     /*
-        Jedes abgeschlossene Spiel
-        durchgehen
+        Alle Spiele durchgehen
     */
 
     history.forEach(
         match => {
 
-            /*
-                Aktuell Einzel.
-                Doppel wird weiter unten
-                ebenfalls berücksichtigt.
-            */
-
             if (
-                !match.players ||
+                !match ||
+                !Array.isArray(match.players) ||
                 match.players.length < 2
             ) {
                 return;
             }
 
 
-            /*
-                --------------------------------
-                EINZEL
-                --------------------------------
-            */
+            /* =========================
+               EINZEL
+            ========================== */
 
             if (
                 match.mode === "single"
@@ -116,25 +182,15 @@ function calculatePlayerStatistics() {
                 }
 
 
-                /*
-                    Spiele
-                */
-
                 player1.games++;
-
                 player2.games++;
 
-
-                /*
-                    Sieger
-                */
 
                 if (
                     Number(match.winner) === 1
                 ) {
 
                     player1.wins++;
-
                     player2.losses++;
 
                 }
@@ -144,15 +200,10 @@ function calculatePlayerStatistics() {
                 ) {
 
                     player2.wins++;
-
                     player1.losses++;
 
                 }
 
-
-                /*
-                    Punkte aus allen Sätzen
-                */
 
                 if (
                     Array.isArray(
@@ -196,18 +247,9 @@ function calculatePlayerStatistics() {
             }
 
 
-            /*
-                --------------------------------
-                DOPPEL
-                --------------------------------
-
-                Erwartete Struktur:
-
-                players[0] = Team 1 Spieler 1
-                players[1] = Team 1 Spieler 2
-                players[2] = Team 2 Spieler 1
-                players[3] = Team 2 Spieler 2
-            */
+            /* =========================
+               DOPPEL
+            ========================== */
 
             if (
                 match.mode === "double"
@@ -221,44 +263,46 @@ function calculatePlayerStatistics() {
 
 
                 const team1 = [
+
                     stats[
-                        String(match.players[0])
+                        String(
+                            match.players[0]
+                        )
                     ],
+
                     stats[
-                        String(match.players[1])
+                        String(
+                            match.players[1]
+                        )
                     ]
-                ];
+
+                ].filter(Boolean);
 
 
                 const team2 = [
+
                     stats[
-                        String(match.players[2])
+                        String(
+                            match.players[2]
+                        )
                     ],
+
                     stats[
-                        String(match.players[3])
+                        String(
+                            match.players[3]
+                        )
                     ]
-                ];
+
+                ].filter(Boolean);
 
 
                 /*
-                    Nur vorhandene Spieler
-                    verwenden
-                */
-
-                const validTeam1 =
-                    team1.filter(Boolean);
-
-                const validTeam2 =
-                    team2.filter(Boolean);
-
-
-                /*
-                    Spiele
+                    Spiele zählen
                 */
 
                 [
-                    ...validTeam1,
-                    ...validTeam2
+                    ...team1,
+                    ...team2
                 ].forEach(
                     player => {
 
@@ -276,15 +320,20 @@ function calculatePlayerStatistics() {
                     Number(match.winner) === 1
                 ) {
 
-                    validTeam1.forEach(
+                    team1.forEach(
                         player => {
+
                             player.wins++;
+
                         }
                     );
 
-                    validTeam2.forEach(
+
+                    team2.forEach(
                         player => {
+
                             player.losses++;
+
                         }
                     );
 
@@ -294,15 +343,20 @@ function calculatePlayerStatistics() {
                     Number(match.winner) === 2
                 ) {
 
-                    validTeam2.forEach(
+                    team2.forEach(
                         player => {
+
                             player.wins++;
+
                         }
                     );
 
-                    validTeam1.forEach(
+
+                    team1.forEach(
                         player => {
+
                             player.losses++;
+
                         }
                     );
 
@@ -311,9 +365,6 @@ function calculatePlayerStatistics() {
 
                 /*
                     Punkte
-
-                    Jeder Spieler eines Teams
-                    bekommt die Team-Punkte.
                 */
 
                 if (
@@ -337,7 +388,7 @@ function calculatePlayerStatistics() {
                                 ) || 0;
 
 
-                            validTeam1.forEach(
+                            team1.forEach(
                                 player => {
 
                                     player.pointsFor +=
@@ -350,7 +401,7 @@ function calculatePlayerStatistics() {
                             );
 
 
-                            validTeam2.forEach(
+                            team2.forEach(
                                 player => {
 
                                     player.pointsFor +=
@@ -381,7 +432,7 @@ function calculatePlayerStatistics() {
 
 
 /* =========================================================
-   GESAMTSTATISTIK AUS DER SPIELHISTORIE
+   GESAMTSTATISTIK
 ========================================================= */
 
 function calculateOverallStatistics() {
@@ -401,51 +452,68 @@ function calculateOverallStatistics() {
     let team2Points = 0;
 
 
-    history.forEach(match => {
+    history.forEach(
+        match => {
 
-        if (!match) {
-            return;
+            if (!match) {
+                return;
+            }
+
+
+            matches++;
+
+
+            const finalSets =
+                Array.isArray(
+                    match.finalSets
+                )
+                    ? match.finalSets
+                    : [];
+
+
+            finalSets.forEach(
+                set => {
+
+                    const score1 =
+                        Number(
+                            set.score1
+                        ) || 0;
+
+
+                    const score2 =
+                        Number(
+                            set.score2
+                        ) || 0;
+
+
+                    sets++;
+
+
+                    team1Points +=
+                        score1;
+
+                    team2Points +=
+                        score2;
+
+
+                    points +=
+                        score1 +
+                        score2;
+
+                }
+            );
+
         }
-
-
-        matches++;
-
-
-        const finalSets =
-            Array.isArray(match.finalSets)
-                ? match.finalSets
-                : [];
-
-
-        finalSets.forEach(set => {
-
-            const score1 =
-                Number(set.score1) || 0;
-
-            const score2 =
-                Number(set.score2) || 0;
-
-
-            sets++;
-
-
-            team1Points += score1;
-
-            team2Points += score2;
-
-            points +=
-                score1 +
-                score2;
-
-        });
-
-    });
+    );
 
 
     const averagePointsPerSet =
         sets > 0
             ? Math.round(
-                (points / sets) * 10
+                (
+                    points /
+                    sets
+                ) * 10
             ) / 10
             : 0;
 
@@ -475,20 +543,9 @@ function calculateOverallStatistics() {
 
 function renderStatistics() {
 
-    const view =
-        document.getElementById(
-            "statsView"
-        );
-
-
-    if (!view) {
-        return;
-    }
-
-
     const container =
-        view.querySelector(
-            ".stats-content"
+        document.getElementById(
+            "statsContent"
         );
 
 
@@ -497,25 +554,17 @@ function renderStatistics() {
     }
 
 
-    /* -----------------------------------------
-       SPIELERSTATISTIK
-    ----------------------------------------- */
-
     const statistics =
         calculatePlayerStatistics();
 
-
-    /* -----------------------------------------
-       GESAMTSTATISTIK
-    ----------------------------------------- */
 
     const overall =
         calculateOverallStatistics();
 
 
-    /* -----------------------------------------
-       KEINE SPIELER
-    ----------------------------------------- */
+    /*
+        Keine Spieler
+    */
 
     if (
         statistics.length === 0
@@ -526,7 +575,7 @@ function renderStatistics() {
             <div class="empty">
 
                 <div class="empty-icon">
-                    👥
+                    📊
                 </div>
 
                 <h3>
@@ -543,16 +592,17 @@ function renderStatistics() {
         `;
 
         return;
+
     }
 
 
-    /* -----------------------------------------
-       SORTIERUNG
+    /*
+        Sortierung
 
-       1. Siege
-       2. Siegquote
-       3. Spiele
-    ----------------------------------------- */
+        1. Siege
+        2. Siegquote
+        3. Spiele
+    */
 
     statistics.sort(
         (a, b) => {
@@ -560,7 +610,12 @@ function renderStatistics() {
             if (
                 b.wins !== a.wins
             ) {
-                return b.wins - a.wins;
+
+                return (
+                    b.wins -
+                    a.wins
+                );
+
             }
 
 
@@ -579,83 +634,36 @@ function renderStatistics() {
             if (
                 winRateB !== winRateA
             ) {
-                return winRateB - winRateA;
+
+                return (
+                    winRateB -
+                    winRateA
+                );
+
             }
 
 
-            return b.games - a.games;
+            return (
+                b.games -
+                a.games
+            );
 
         }
     );
 
 
-    /* -----------------------------------------
-       GESAMTE SPIELERERGEBNISSE
-
-       Wichtig bei Doppel:
-
-       Ein Doppelspiel erzeugt
-       2 Spielergebnisse pro Team.
-
-       Deshalb werden Siege/Niederlagen
-       aus den Spielerstatistiken berechnet.
-    ----------------------------------------- */
-
-    const totalWins =
-        statistics.reduce(
-            (total, player) =>
-                total + player.wins,
-            0
-        );
-
-
-    const totalLosses =
-        statistics.reduce(
-            (total, player) =>
-                total + player.losses,
-            0
-        );
-
-
     /*
-        Gesamtzahl der gewerteten
-        Spielergebnisse
+        HTML
     */
-
-    const totalResults =
-        totalWins +
-        totalLosses;
-
-
-    /*
-        Gesamt-Siegquote
-    */
-
-    const winRate =
-        totalResults > 0
-            ? Math.round(
-                (
-                    totalWins /
-                    totalResults
-                ) * 100
-            )
-            : 0;
-
-
-    /* -----------------------------------------
-       HTML
-    ----------------------------------------- */
 
     container.innerHTML = `
 
-        <!-- =====================================
+        <!-- =========================
              GESAMTSTATISTIK
-        ====================================== -->
+        ========================== -->
 
         <div class="stats-overview">
 
-
-            <!-- SPIELE -->
 
             <div class="stat-card">
 
@@ -677,7 +685,6 @@ function renderStatistics() {
 
             </div>
 
-	    <!-- SÄTZE -->
 
             <div class="stat-card">
 
@@ -700,8 +707,6 @@ function renderStatistics() {
             </div>
 
 
-            <!-- PUNKTE -->
-
             <div class="stat-card">
 
                 <div class="stat-card-icon">
@@ -720,18 +725,17 @@ function renderStatistics() {
                     insgesamt
                 </div>
 
-      	     </div>
+            </div>
 
 
-       	</div>
+        </div>
 
 
-        <!-- =====================================
+        <!-- =========================
              SPIELER-RANGLISTE
-        ====================================== -->
+        ========================== -->
 
         <div class="stats-section">
-
 
             <div class="stats-section-header">
 
@@ -749,7 +753,10 @@ function renderStatistics() {
 
 
                 <div class="stats-total">
-                    ${statistics.length} Spieler
+                    ${statistics.length}
+                    ${statistics.length === 1
+                        ? "Spieler"
+                        : "Spieler"}
                 </div>
 
             </div>
@@ -757,182 +764,202 @@ function renderStatistics() {
 
             <div class="statistics-list">
 
+                ${
+                    statistics
+                        .map(
+                            (player, index) => {
 
-                ${statistics
-                    .map(
-                        (player, index) => {
-
-                            /*
-                                Siegquote
-                            */
-
-                            const playerWinRate =
-                                player.games > 0
-                                    ? Math.round(
-                                        (
-                                            player.wins /
-                                            player.games
-                                        ) * 100
-                                    )
-                                    : 0;
+                                const playerWinRate =
+                                    player.games > 0
+                                        ? Math.round(
+                                            (
+                                                player.wins /
+                                                player.games
+                                            ) * 100
+                                        )
+                                        : 0;
 
 
-                            /*
-                                Punktedifferenz
-                            */
-
-                            const pointDifference =
-                                player.pointsFor -
-                                player.pointsAgainst;
+                                const pointDifference =
+                                    player.pointsFor -
+                                    player.pointsAgainst;
 
 
-                            /*
-                                Rang-Klasse
-                            */
-
-                            let rankClass = "";
+                                let rankClass = "";
 
 
-                            if (
-                                index === 0 &&
-                                player.games > 0
-                            ) {
+                                if (
+                                    index === 0 &&
+                                    player.games > 0
+                                ) {
 
-                                rankClass =
-                                    "rank-first";
+                                    rankClass =
+                                        "rank-first";
 
-                            }
+                                }
 
-                            else if (
-                                index === 1 &&
-                                player.games > 0
-                            ) {
+                                else if (
+                                    index === 1 &&
+                                    player.games > 0
+                                ) {
 
-                                rankClass =
-                                    "rank-second";
+                                    rankClass =
+                                        "rank-second";
 
-                            }
+                                }
 
-                            else if (
-                                index === 2 &&
-                                player.games > 0
-                            ) {
+                                else if (
+                                    index === 2 &&
+                                    player.games > 0
+                                ) {
 
-                                rankClass =
-                                    "rank-third";
+                                    rankClass =
+                                        "rank-third";
 
-                            }
-
-
-                            return `
-
-                                <div
-                                    class="
-                                        statistics-item
-                                        ${rankClass}
-                                    "
-                                >
+                                }
 
 
-                                    <!-- RANG -->
+                                return `
 
-                                    <div class="statistics-rank">
-
-                                        ${index + 1}
-
-                                    </div>
-
-
-                                    <!-- AVATAR -->
-
-                                    <div class="statistics-avatar">
-
-                                        ${escapeHtml(
-                                            player.name
-                                                .charAt(0)
-                                                .toUpperCase()
-                                        )}
-
-                                    </div>
+                                    <div
+                                        class="
+                                            statistics-item
+                                            ${rankClass}
+                                        "
+                                    >
 
 
-                                    <!-- SPIELER -->
+                                        <!-- RANG -->
 
-                                    <div class="statistics-info">
+                                        <div class="statistics-rank">
 
-                                        <strong>
+                                            ${index + 1}
+
+                                        </div>
+
+
+                                        <!-- AVATAR -->
+
+                                        <div class="statistics-avatar">
 
                                             ${escapeHtml(
                                                 player.name
+                                                    .charAt(0)
+                                                    .toUpperCase()
                                             )}
 
-                                        </strong>
+                                        </div>
 
 
-                                        <div class="statistics-record">
+                                        <!-- SPIELER -->
 
-                                            <span class="wins">
-                                                ${player.wins} Siege
-                                            </span>
+                                        <div class="statistics-info">
+
+                                            <strong>
+
+                                                ${escapeHtml(
+                                                    player.name
+                                                )}
+
+                                            </strong>
+
+
+                                            <div class="statistics-record">
+
+                                                <span class="wins">
+
+                                                    ${player.wins}
+                                                    Siege
+
+                                                </span>
+
+                                                <span>
+
+                                                    ${player.losses}
+                                                    Niederlagen
+
+                                                </span>
+
+                                            </div>
+
+
+                                            <div class="statistics-details">
+
+                                                ${player.games}
+                                                Spiele
+
+                                                ·
+
+                                                ${player.pointsFor}
+                                                Punkte
+
+                                                ·
+
+                                                ${
+                                                    pointDifference >= 0
+                                                        ? "+"
+                                                        : ""
+                                                }${pointDifference}
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- SIEGQUOTE -->
+
+                                        <div class="statistics-rate">
+
+                                            <strong>
+                                                ${playerWinRate}%
+                                            </strong>
 
                                             <span>
-                                                ${player.losses}
-                                                Niederlagen
+                                                Siegquote
                                             </span>
 
                                         </div>
 
 
-                                        <div class="statistics-details">
-
-                                            ${player.games}
-                                            Spiele
-
-                                            ·
-
-                                            ${player.pointsFor}
-                                            Punkte
-
-                                            ·
-
-                                            ${
-                                                pointDifference >= 0
-                                                    ? "+"
-                                                    : ""
-                                            }${pointDifference}
-
-                                        </div>
-
                                     </div>
 
+                                `;
 
-                                    <!-- SIEGQUOTE -->
-
-                                    <div class="statistics-rate">
-
-                                        <strong>
-                                            ${playerWinRate}%
-                                        </strong>
-
-                                        <span>
-                                            Siegquote
-                                        </span>
-
-                                    </div>
-
-
-                                </div>
-
-                            `;
-
-                        }
-                    )
-                    .join("")}
-
+                            }
+                        )
+                        .join("")
+                }
 
             </div>
 
         </div>
 
     `;
+
 }
+
+
+/* =========================================================
+   INITIALISIERUNG
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        /*
+            Die View wird erst aufgebaut,
+            wenn die App existiert.
+        */
+
+        if (
+            typeof buildStatisticsView ===
+            "function"
+        ) {
+
+            buildStatisticsView();
+
+        }
+
+    }
+);
