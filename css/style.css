@@ -754,6 +754,45 @@ select:focus-visible {
     font-size: 11px;
 }
 
+.no-players-message {
+    text-align: center;
+    padding: 30px 20px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+}
+
+.no-players-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+.no-players-message h3 {
+    margin: 0 0 8px;
+}
+
+.no-players-message p {
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+}
+
+.no-players-message small {
+    display: block;
+    margin-bottom: 18px;
+    color: var(--text-secondary);
+}
+
+.add-player-game-button {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 16px;
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 
 /* =========================================================
    PLAYER SELECTION – EINHEITLICHES GRID
