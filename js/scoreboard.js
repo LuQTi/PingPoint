@@ -248,11 +248,6 @@ function buildScoreboard() {
                     </button>
 
 
-                    <div class="score-vs">
-                        VS
-                    </div>
-
-
                     <!-- SPIELER 2 -->
 
                     <button

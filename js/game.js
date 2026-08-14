@@ -45,6 +45,8 @@ function showNewGame() {
 
     updateGamePreview();
 
+    updateStartGameButton();
+
 }
 
 
@@ -394,8 +396,10 @@ function buildNewGame() {
             ========================== -->
 
             <button
-                class="start-game-button"
+		id="startGameButton"
+                class="start-game-button disabled"
                 onclick="startConfiguredGame()"
+	        disabled
             >
 
                 <span>
@@ -565,6 +569,7 @@ function selectMode(mode) {
     */
 
     updateGamePreview();
+    updateStartGameButton();
 
 }
 
@@ -1763,6 +1768,7 @@ function selectBestOf(number) {
 
 
     updateGamePreview();
+    updateStartGameButton();
 
 }
 
@@ -1855,6 +1861,7 @@ function selectPoints(points) {
 
 
     updateGamePreview();
+    updateStartGameButton();
 
 }
 
@@ -2087,6 +2094,186 @@ function updateGamePreview() {
 
 }
 
+/* =========================================================
+   SPIEL-START BUTTON AKTUALISIEREN
+========================================================= */
+
+function updateStartGameButton() {
+
+    const button =
+        document.getElementById(
+            "startGameButton"
+        );
+
+    if (!button) {
+        return;
+    }
+
+
+    let valid = true;
+
+
+    /* =========================
+       GENÜGEND SPIELER
+    ========================== */
+
+    const requiredPlayers =
+        gameConfig.mode === "single"
+            ? 2
+            : 4;
+
+    if (
+        players.length <
+        requiredPlayers
+    ) {
+
+        valid = false;
+
+    }
+
+
+    /* =========================
+       PUNKTZAHL
+    ========================== */
+
+    if (
+        gameConfig.pointsToWin === null
+    ) {
+
+        const customInput =
+            document.getElementById(
+                "customPoints"
+            );
+
+        const points =
+            Number(
+                customInput?.value
+            );
+
+        if (
+            !points ||
+            points < 2
+        ) {
+
+            valid = false;
+
+        }
+
+    }
+
+
+    /* =========================
+       EINZEL
+    ========================== */
+
+    if (
+        gameConfig.mode === "single"
+    ) {
+
+        const player1 =
+            document.getElementById(
+                "player1"
+            )?.value;
+
+        const player2 =
+            document.getElementById(
+                "player2"
+            )?.value;
+
+
+        if (
+            !player1 ||
+            !player2
+        ) {
+
+            valid = false;
+
+        }
+
+
+        if (
+            player1 &&
+            player2 &&
+            player1 === player2
+        ) {
+
+            valid = false;
+
+        }
+
+    }
+
+
+    /* =========================
+       DOPPEL
+    ========================== */
+
+    else {
+
+        const ids = [
+
+            document.getElementById(
+                "team1player1"
+            )?.value,
+
+            document.getElementById(
+                "team1player2"
+            )?.value,
+
+            document.getElementById(
+                "team2player1"
+            )?.value,
+
+            document.getElementById(
+                "team2player2"
+            )?.value
+
+        ];
+
+
+        /* Alle vier müssen ausgewählt sein */
+
+        if (
+            ids.some(
+                id => !id
+            )
+        ) {
+
+            valid = false;
+
+        }
+
+
+        /* Jeder Spieler nur einmal */
+
+        const uniqueIds =
+            new Set(ids);
+
+        if (
+            uniqueIds.size !== 4
+        ) {
+
+            valid = false;
+
+        }
+
+    }
+
+
+    /* =========================
+       BUTTON AKTUALISIEREN
+    ========================== */
+
+    button.disabled =
+        !valid;
+
+    button.classList.toggle(
+        "disabled",
+        !valid
+    );
+
+}
+
 
 /* =========================================================
    SPIEL STARTEN
@@ -2144,7 +2331,7 @@ function startConfiguredGame() {
 
         if (
             !points ||
-            points < 1
+            points < 2
         ) {
 
             alert(
@@ -2426,6 +2613,8 @@ function connectGameInputs() {
 
                 updateGamePreview();
 
+		updateStartGameButton();
+
             };
 
 
@@ -2438,8 +2627,12 @@ function connectGameInputs() {
 
                 updateGamePreview();
 
+		updateStartGameButton();
+
             };
 
     });
+
+    updateStartGameButton();
 
 }
