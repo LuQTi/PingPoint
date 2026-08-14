@@ -136,8 +136,44 @@ function buildPlayersView() {
 
 
 /* =========================================================
-   SPIELER FORMULAR SCHLIESSEN
+   SPIELER FORMULAR ÖFFNEN / SCHLIESSEN
 ========================================================= */
+
+function toggleAddPlayer() {
+
+    const box =
+        document.getElementById(
+            "addPlayerBox"
+        );
+
+
+    if (!box) {
+        return;
+    }
+
+
+    box.classList.toggle(
+        "active"
+    );
+
+
+    if (
+        box.classList.contains(
+            "active"
+        )
+    ) {
+
+        const input =
+            document.getElementById(
+                "playerNameInput"
+            );
+
+
+        if (input) {
+            input.focus();
+        }
+
+    }
 
 }
 
