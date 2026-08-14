@@ -416,6 +416,22 @@ function showView(viewName) {
 
     }
 
+/* -----------------------------------------
+   BOTTOM NAV EIN-/AUSBLENDEN
+----------------------------------------- */
+
+const app = document.querySelector(".app");
+
+if (app) {
+
+    if (viewName === "scoreboard") {
+        app.classList.add("hide-bottom-nav");
+    } else {
+        app.classList.remove("hide-bottom-nav");
+    }
+
+}
+
 
     /* -----------------------------------------
        SEITENSPEZIFISCHE AKTUALISIERUNG
