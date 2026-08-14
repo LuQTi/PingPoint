@@ -70,14 +70,6 @@ function buildPlayersView() {
 
                 </div>
 
-
-                <button
-                    class="add-button"
-                    onclick="toggleAddPlayer()"
-                >
-                    +
-                </button>
-
             </div>
 
 
@@ -103,7 +95,7 @@ function buildPlayersView() {
 
                     <button
                         class="form-button cancel-button"
-                        onclick="toggleAddPlayer()"
+                        onclick="clearPlayerInput()"
                     >
                         Abbrechen
                     </button>
@@ -144,45 +136,24 @@ function buildPlayersView() {
 
 
 /* =========================================================
-   SPIELER FORMULAR ÖFFNEN / SCHLIESSEN
+   SPIELER FORMULAR SCHLIESSEN
 ========================================================= */
 
-function toggleAddPlayer() {
+}
 
-    const box =
+function clearPlayerInput() {
+
+    const input =
         document.getElementById(
-            "addPlayerBox"
+            "playerNameInput"
         );
 
-
-    if (!box) {
+    if (!input) {
         return;
     }
 
-
-    box.classList.toggle(
-        "active"
-    );
-
-
-    if (
-        box.classList.contains(
-            "active"
-        )
-    ) {
-
-        const input =
-            document.getElementById(
-                "playerNameInput"
-            );
-
-
-        if (input) {
-            input.focus();
-        }
-
-    }
-
+    input.value = "";
+    input.blur();
 }
 
 
@@ -260,8 +231,6 @@ function addPlayer() {
     savePlayers();
 
     input.value = "";
-
-    toggleAddPlayer();
 
     renderPlayers();
 
