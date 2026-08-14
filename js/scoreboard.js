@@ -493,36 +493,47 @@ function renderScoreboard() {
     */
 
     const status =
-        document.getElementById(
-            "scoreStatus"
-        );
+    document.getElementById(
+        "scoreStatus"
+    );
 
+if (status) {
 
-    if (status) {
+    if (activeGame.finished) {
 
-        if (activeGame.finished) {
+        const winnerNames =
+            getScorePlayerNames();
 
-            const winnerNames =
-                getScorePlayerNames();
+        status.innerHTML = `
+            <div class="score-win">
+                <div class="score-win-icon">
+                    🏆
+                </div>
 
+                <div class="score-win-title">
+                    ${
+                        activeGame.winner === 1
+                            ? winnerNames.player1
+                            : winnerNames.player2
+                    }
+                </div>
 
-            status.textContent =
-                activeGame.winner === 1
-                    ? winnerNames.player1 +
-                      " gewinnt!"
-                    : winnerNames.player2 +
-                      " gewinnt!";
-
-        }
-
-        else {
-
-            status.textContent =
-                "Spiel läuft";
-
-        }
+                <div class="score-win-subtitle">
+                    gewinnt das Spiel!
+                </div>
+            </div>
+        `;
 
     }
+
+    else {
+
+        status.textContent =
+            "Spiel läuft";
+
+    }
+
+}
 
 
     /*
@@ -724,24 +735,100 @@ function undoPoint() {
         MATCH WAR BEREITS BEENDET
         =================================
 
-        Match-Ende zurücknehmen.
-        Danach kann der letzte Punkt
-        normal entfernt werden.
+        Der letzte Satz befindet sich
+        bereits in activeGame.sets.
+
+        Deshalb müssen wir zuerst den
+        letzten abgeschlossenen Satz
+        wieder zurückholen.
     */
 
     if (activeGame.finished) {
 
+        /*
+            Match-Ende zurücknehmen
+        */
+
         activeGame.finished = false;
 
         delete activeGame.winner;
-
         delete activeGame.finishedAt;
 
+
+        /*
+            Letzten gewonnenen Satz holen
+        */
+
+        if (
+            activeGame.sets.length > 0
+        ) {
+
+            const previousSet =
+                activeGame.sets.pop();
+
+
+            /*
+                Diesen Satz wieder zum
+                aktuellen Satz machen
+            */
+
+            activeGame.currentSet = {
+
+                score1:
+                    previousSet.score1,
+
+                score2:
+                    previousSet.score2,
+
+                points:
+                    Array.isArray(
+                        previousSet.points
+                    )
+                        ? [
+                            ...previousSet.points
+                        ]
+                        : []
+
+            };
+
+
+            /*
+                Jetzt den Matchball /
+                letzten Punkt zurücknehmen
+            */
+
+            if (
+                activeGame.currentSet.points.length > 0
+            ) {
+
+                const lastPoint =
+                    activeGame.currentSet.points.pop();
+
+
+                if (lastPoint === 1) {
+
+                    activeGame.currentSet.score1--;
+
+                }
+
+                else if (lastPoint === 2) {
+
+                    activeGame.currentSet.score2--;
+
+                }
+
+            }
+
+        }
+
+
+        saveActiveGame();
+
+        renderScoreboard();
+
+        return;
+
     }
-
-
-    const currentSet =
-        activeGame.currentSet;
 
 
     /*
@@ -751,7 +838,12 @@ function undoPoint() {
         =================================
     */
 
+    const currentSet =
+        activeGame.currentSet;
+
+
     if (
+        currentSet &&
         currentSet.points.length > 0
     ) {
 
@@ -765,7 +857,7 @@ function undoPoint() {
 
         }
 
-        else {
+        else if (lastPoint === 2) {
 
             currentSet.score2--;
 
@@ -777,6 +869,7 @@ function undoPoint() {
         renderScoreboard();
 
         return;
+
     }
 
 
@@ -798,22 +891,20 @@ function undoPoint() {
         renderScoreboard();
 
         return;
+
     }
 
 
     /*
-        Letzten abgeschlossenen Satz
-        zurückholen.
+        =================================
+        FALL 4:
+        LETZTEN SATZ ZURÜCKHOLEN
+        =================================
     */
 
     const previousSet =
         activeGame.sets.pop();
 
-
-    /*
-        Satz wieder als aktuellen
-        Satz einsetzen.
-    */
 
     activeGame.currentSet = {
 
@@ -824,47 +915,43 @@ function undoPoint() {
             previousSet.score2,
 
         points:
-            [
-                ...previousSet.points
-            ]
+            Array.isArray(
+                previousSet.points
+            )
+                ? [
+                    ...previousSet.points
+                ]
+                : []
 
     };
 
 
     /*
-        Der letzte Punkt des Satzes
-        war der Satzgewinn.
-
-        Diesen Punkt ebenfalls
-        zurücknehmen.
+        Letzten Punkt des Satzes
+        ebenfalls zurücknehmen
     */
 
-    const lastPoint =
-        activeGame.currentSet.points.pop();
+    if (
+        activeGame.currentSet.points.length > 0
+    ) {
+
+        const lastPoint =
+            activeGame.currentSet.points.pop();
 
 
-    if (lastPoint === 1) {
+        if (lastPoint === 1) {
 
-        activeGame.currentSet.score1--;
+            activeGame.currentSet.score1--;
+
+        }
+
+        else if (lastPoint === 2) {
+
+            activeGame.currentSet.score2--;
+
+        }
 
     }
-
-    else if (lastPoint === 2) {
-
-        activeGame.currentSet.score2--;
-
-    }
-
-
-    /*
-        Match-Ende entfernen
-    */
-
-    delete activeGame.winner;
-
-    delete activeGame.finished;
-
-    delete activeGame.finishedAt;
 
 
     saveActiveGame();
@@ -872,7 +959,6 @@ function undoPoint() {
     renderScoreboard();
 
 }
-
 
 /* =========================
    SATZ GEWINNER PRÜFEN
@@ -1068,14 +1154,8 @@ function finishMatch(winner) {
         return;
     }
 
-
     /*
-        Spiel lediglich als beendet
-        markieren.
-
-        WICHTIG:
-        NICHT löschen!
-        NICHT ins Hauptmenü wechseln!
+        Spiel als beendet markieren
     */
 
     activeGame.finished = true;
@@ -1087,16 +1167,23 @@ function finishMatch(winner) {
 
 
     /*
-        Aktuellen Zustand speichern,
-        damit Undo weiterhin möglich ist.
+        Spielstand speichern
+
+        WICHTIG:
+        Das Spiel wird hier NICHT
+        aus localStorage gelöscht.
     */
 
     saveActiveGame();
 
+
+    /*
+        Auf dem Scoreboard bleiben
+    */
+
     renderScoreboard();
 
 }
-
 
 /* =========================
    AKTIVES SPIEL SPEICHERN
@@ -1179,13 +1266,36 @@ function confirmExitGame() {
 
     /*
         =================================
-        ABGESCHLOSSENES SPIEL SPEICHERN
+        FERTIGES SPIEL SPEICHERN
         =================================
     */
 
     if (activeGame.finished) {
 
-        const games =
+        const match = {
+
+            ...activeGame,
+
+            finalSets:
+                activeGame.sets.map(
+                    set => ({
+
+                        ...set,
+
+                        points:
+                            Array.isArray(
+                                set.points
+                            )
+                                ? [...set.points]
+                                : []
+
+                    })
+                )
+
+        };
+
+
+        const history =
             JSON.parse(
                 localStorage.getItem(
                     "pingpoint_games"
@@ -1194,31 +1304,96 @@ function confirmExitGame() {
 
 
         /*
-            Spiel nur einmal speichern.
-
-            Falls aus irgendeinem Grund
-            bereits vorhanden, nicht
-            doppelt speichern.
+            Spiel vorne in die Historie
+            einfügen
         */
 
-        games.push(
-            activeGame
+        history.unshift(
+            match
         );
 
 
         localStorage.setItem(
             "pingpoint_games",
             JSON.stringify(
-                games
+                history
             )
         );
+
+
+        /*
+            Spielerstatistik aktualisieren
+        */
+
+        if (
+            typeof updatePlayerStats ===
+            "function"
+        ) {
+
+            updatePlayerStats(
+                match
+            );
+
+        }
+
+
+        /*
+            =================================
+            AKTIVES SPIEL LÖSCHEN
+            =================================
+        */
+
+        localStorage.removeItem(
+            "pingpoint_active_game"
+        );
+
+
+        /*
+            Aktives Spiel merken
+        */
+
+        activeGame = null;
+
+
+        /*
+            =================================
+            HISTORIE ÖFFNEN
+            =================================
+        */
+
+        showView("games");
+
+
+        /*
+            Historie aufbauen
+        */
+
+        buildGamesView();
+
+
+        /*
+            Das gerade gespeicherte Spiel
+            direkt öffnen.
+
+            Da wir es mit unshift()
+            an Position 0 eingefügt haben,
+            ist der Index 0.
+        */
+
+        renderGameDetails(
+            0,
+            0
+        );
+
+
+        return;
 
     }
 
 
     /*
         =================================
-        AKTIVES SPIEL LÖSCHEN
+        NICHT BEENDETES SPIEL VERLASSEN
         =================================
     */
 
@@ -1229,12 +1404,6 @@ function confirmExitGame() {
 
     activeGame = null;
 
-
-    /*
-        =================================
-        ZUR STARTSEITE
-        =================================
-    */
 
     showView("home");
 
