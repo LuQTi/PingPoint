@@ -197,15 +197,12 @@ function addPlayer() {
             "playerNameInput"
         );
 
-
     if (!input) {
         return;
     }
 
-
     const name =
         input.value.trim();
-
 
     if (!name) {
 
@@ -214,9 +211,16 @@ function addPlayer() {
         );
 
         return;
-
     }
 
+    if (name.length > 10) {
+
+        alert(
+            "Der Spielername darf maximal 10 Zeichen lang sein."
+        );
+
+        return;
+    }
 
     const alreadyExists =
         players.some(
@@ -226,7 +230,6 @@ function addPlayer() {
                 name.toLowerCase()
         );
 
-
     if (alreadyExists) {
 
         alert(
@@ -234,9 +237,7 @@ function addPlayer() {
         );
 
         return;
-
     }
-
 
     const player = {
 
@@ -245,40 +246,28 @@ function addPlayer() {
         name: name,
 
         games: 0,
-
         wins: 0,
-
         losses: 0,
 
         pointsFor: 0,
-
         pointsAgainst: 0
-
     };
-
 
     players.push(
         player
     );
 
-
     savePlayers();
-
 
     input.value = "";
 
-
     toggleAddPlayer();
-
 
     renderPlayers();
 
-
     updatePlayerPageSubtitle();
 
-
     updateHome();
-
 }
 
 
@@ -522,3 +511,18 @@ document.addEventListener(
 
     }
 );
+
+document.addEventListener("input", function (event) {
+
+    if (event.target.id === "playerNameInput") {
+
+        if (event.target.value.length > 10) {
+
+            event.target.value =
+                event.target.value.slice(0, 10);
+
+        }
+
+    }
+
+});
