@@ -81,40 +81,40 @@ function getScorePlayerNames() {
          Team2-Spieler2]
     */
 
-   return {
+    return {
 
-    player1:
+        player1:
 
-        (
-            getPlayerName(
-                activeGame.players[0]
-            ) || "Spieler 1"
-        )
-        +
-        " &\n" +
-        (
-            getPlayerName(
-                activeGame.players[1]
-            ) || "Spieler 2"
-        ),
+            (
+                getPlayerName(
+                    activeGame.players[0]
+                ) || "Spieler 1"
+            )
+            +
+            " &\n" +
+            (
+                getPlayerName(
+                    activeGame.players[1]
+                ) || "Spieler 2"
+            ),
 
 
-    player2:
+        player2:
 
-        (
-            getPlayerName(
-                activeGame.players[2]
-            ) || "Spieler 3"
-        )
-        +
-        " &\n" +
-        (
-            getPlayerName(
-                activeGame.players[3]
-            ) || "Spieler 4"
-        )
+            (
+                getPlayerName(
+                    activeGame.players[2]
+                ) || "Spieler 3"
+            )
+            +
+            " &\n" +
+            (
+                getPlayerName(
+                    activeGame.players[3]
+                ) || "Spieler 4"
+            )
 
-};
+    };
 
 }
 
@@ -145,17 +145,17 @@ function buildScoreboard() {
 
                 <div class="score-title">
 
-    		  <div id="scoreSetLabel">
-                    <span>
-                        Satz 1
-                    </span>
-                  </div>
+                    <div id="scoreSetLabel">
+                        <span>
+                            Satz 1
+                        </span>
+                    </div>
 
-                  <div id="scoreBestOfLabel">
-                    <small>
-                        Best of 3
-                    </small>
-                  </div>
+                    <div id="scoreBestOfLabel">
+                        <small>
+                            Best of 3
+                        </small>
+                    </div>
 
                 </div>
 
@@ -164,43 +164,43 @@ function buildScoreboard() {
 
             <!-- SATZSTAND -->
 
-<div class="set-score-card">
+            <div class="set-score-card">
 
-    <div class="set-team set-team-left">
+                <div class="set-team set-team-left">
 
-        <span id="scoreTeam1Name">
-            Spieler 1
-        </span>
+                    <span id="scoreTeam1Name">
+                        Spieler 1
+                    </span>
 
-    </div>
-
-
-    <div class="set-result">
-
-        <strong id="scoreSets1">
-            0
-        </strong>
-
-        <span class="set-divider">
-            :
-        </span>
-
-        <strong id="scoreSets2">
-            0
-        </strong>
-
-    </div>
+                </div>
 
 
-    <div class="set-team set-team-right">
+                <div class="set-result">
 
-        <span id="scoreTeam2Name">
-            Spieler 2
-        </span>
+                    <strong id="scoreSets1">
+                        0
+                    </strong>
 
-    </div>
+                    <span class="set-divider">
+                        :
+                    </span>
 
-</div>
+                    <strong id="scoreSets2">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="set-team set-team-right">
+
+                    <span id="scoreTeam2Name">
+                        Spieler 2
+                    </span>
+
+                </div>
+
+            </div>
 
 
             <!-- PUNKTE -->
@@ -311,6 +311,7 @@ function buildScoreboard() {
         </div>
 
     `;
+
 }
 
 
@@ -461,6 +462,15 @@ function renderScoreboard() {
 
     /*
         UNDO
+
+        Undo ist möglich wenn:
+
+        - im aktuellen Satz Punkte existieren
+
+        ODER
+
+        - bereits ein abgeschlossener Satz
+          existiert
     */
 
     const undoButton =
@@ -472,14 +482,85 @@ function renderScoreboard() {
     if (undoButton) {
 
         undoButton.disabled =
-            currentSet.points.length === 0;
+            currentSet.points.length === 0 &&
+            activeGame.sets.length === 0;
 
     }
 
 
     /*
-        AKTIVEN SPIELER NICHT
-        ÜBERSCHREIBEN
+        STATUS
+    */
+
+    const status =
+        document.getElementById(
+            "scoreStatus"
+        );
+
+
+    if (status) {
+
+        if (activeGame.finished) {
+
+            const winnerNames =
+                getScorePlayerNames();
+
+
+            status.textContent =
+                activeGame.winner === 1
+                    ? winnerNames.player1 +
+                      " gewinnt!"
+                    : winnerNames.player2 +
+                      " gewinnt!";
+
+        }
+
+        else {
+
+            status.textContent =
+                "Spiel läuft";
+
+        }
+
+    }
+
+
+    /*
+        MATCH BEENDET
+
+        Punkte-Buttons deaktivieren
+    */
+
+    const side1 =
+        document.getElementById(
+            "scoreSide1"
+        );
+
+
+    const side2 =
+        document.getElementById(
+            "scoreSide2"
+        );
+
+
+    if (side1) {
+
+        side1.disabled =
+            !!activeGame.finished;
+
+    }
+
+
+    if (side2) {
+
+        side2.disabled =
+            !!activeGame.finished;
+
+    }
+
+
+    /*
+        AKTIVEN SPIELER HERVORHEBEN
     */
 
     updateScoreHighlights();
@@ -527,6 +608,7 @@ function updateScoreHighlights() {
         "leading"
     );
 
+
     side2.classList.remove(
         "leading"
     );
@@ -562,14 +644,32 @@ function addPoint(player) {
     }
 
 
+    /*
+        Nach Matchende keine neuen
+        Punkte mehr zulassen.
+    */
+
+    if (activeGame.finished) {
+        return;
+    }
+
+
     const currentSet =
         activeGame.currentSet;
 
+
+    /*
+        Punkt-Historie speichern
+    */
 
     currentSet.points.push(
         player
     );
 
+
+    /*
+        Punktestand erhöhen
+    */
 
     if (player === 1) {
 
@@ -584,9 +684,23 @@ function addPoint(player) {
     }
 
 
+    /*
+        Erst speichern
+    */
+
     saveActiveGame();
 
+
+    /*
+        Scoreboard aktualisieren
+    */
+
     renderScoreboard();
+
+
+    /*
+        Prüfen ob Satz gewonnen wurde
+    */
 
     checkSetWinner();
 
@@ -604,34 +718,153 @@ function undoPoint() {
     }
 
 
+    /*
+        =================================
+        FALL 1:
+        MATCH WAR BEREITS BEENDET
+        =================================
+
+        Match-Ende zurücknehmen.
+        Danach kann der letzte Punkt
+        normal entfernt werden.
+    */
+
+    if (activeGame.finished) {
+
+        activeGame.finished = false;
+
+        delete activeGame.winner;
+
+        delete activeGame.finishedAt;
+
+    }
+
+
     const currentSet =
         activeGame.currentSet;
 
 
+    /*
+        =================================
+        FALL 2:
+        AKTUELLER SATZ HAT PUNKTE
+        =================================
+    */
+
     if (
-        currentSet.points.length === 0
+        currentSet.points.length > 0
     ) {
 
-        return;
+        const lastPoint =
+            currentSet.points.pop();
 
+
+        if (lastPoint === 1) {
+
+            currentSet.score1--;
+
+        }
+
+        else {
+
+            currentSet.score2--;
+
+        }
+
+
+        saveActiveGame();
+
+        renderScoreboard();
+
+        return;
     }
 
 
+    /*
+        =================================
+        FALL 3:
+        AKTUELLER SATZ IST LEER
+        =================================
+
+        Wir gehen einen Satz zurück.
+    */
+
+    if (
+        activeGame.sets.length === 0
+    ) {
+
+        saveActiveGame();
+
+        renderScoreboard();
+
+        return;
+    }
+
+
+    /*
+        Letzten abgeschlossenen Satz
+        zurückholen.
+    */
+
+    const previousSet =
+        activeGame.sets.pop();
+
+
+    /*
+        Satz wieder als aktuellen
+        Satz einsetzen.
+    */
+
+    activeGame.currentSet = {
+
+        score1:
+            previousSet.score1,
+
+        score2:
+            previousSet.score2,
+
+        points:
+            [
+                ...previousSet.points
+            ]
+
+    };
+
+
+    /*
+        Der letzte Punkt des Satzes
+        war der Satzgewinn.
+
+        Diesen Punkt ebenfalls
+        zurücknehmen.
+    */
+
     const lastPoint =
-        currentSet.points.pop();
+        activeGame.currentSet.points.pop();
 
 
     if (lastPoint === 1) {
 
-        currentSet.score1--;
+        activeGame.currentSet.score1--;
 
     }
 
-    else {
+    else if (lastPoint === 2) {
 
-        currentSet.score2--;
+        activeGame.currentSet.score2--;
 
     }
+
+
+    /*
+        Match-Ende entfernen
+    */
+
+    delete activeGame.winner;
+
+    delete activeGame.finished;
+
+    delete activeGame.finishedAt;
 
 
     saveActiveGame();
@@ -648,6 +881,16 @@ function undoPoint() {
 function checkSetWinner() {
 
     if (!activeGame) {
+        return;
+    }
+
+
+    /*
+        Falls Match bereits beendet
+        ist nichts mehr prüfen.
+    */
+
+    if (activeGame.finished) {
         return;
     }
 
@@ -699,6 +942,15 @@ function checkSetWinner() {
 
 function finishCurrentSet(winner) {
 
+    if (!activeGame) {
+        return;
+    }
+
+
+    /*
+        Aktuellen Satz kopieren
+    */
+
     const completedSet = {
 
         score1:
@@ -718,16 +970,29 @@ function finishCurrentSet(winner) {
     };
 
 
+    /*
+        Satz zu den abgeschlossenen
+        Sätzen hinzufügen
+    */
+
     activeGame.sets.push(
         completedSet
     );
 
+
+    /*
+        Benötigte Sätze berechnen
+    */
 
     const setsNeeded =
         Math.ceil(
             activeGame.bestOf / 2
         );
 
+
+    /*
+        Gewonnene Sätze zählen
+    */
 
     const setsWon1 =
         activeGame.sets.filter(
@@ -743,21 +1008,37 @@ function finishCurrentSet(winner) {
         ).length;
 
 
+    /*
+        =================================
+        MATCH GEWONNEN
+        =================================
+    */
+
     if (
         setsWon1 >= setsNeeded ||
         setsWon2 >= setsNeeded
     ) {
 
-        finishMatch(
+        const matchWinner =
             setsWon1 >= setsNeeded
                 ? 1
-                : 2
+                : 2;
+
+
+        finishMatch(
+            matchWinner
         );
 
-        return;
 
+        return;
     }
 
+
+    /*
+        =================================
+        NEUER SATZ
+        =================================
+    */
 
     activeGame.currentSet = {
 
@@ -788,65 +1069,31 @@ function finishMatch(winner) {
     }
 
 
-    /* =========================
-       GEWINNER
-    ========================== */
+    /*
+        Spiel lediglich als beendet
+        markieren.
+
+        WICHTIG:
+        NICHT löschen!
+        NICHT ins Hauptmenü wechseln!
+    */
+
+    activeGame.finished = true;
 
     activeGame.winner = winner;
-
-
-    /* =========================
-       SPIEL ABSCHLIESSEN
-    ========================== */
 
     activeGame.finishedAt =
         new Date().toISOString();
 
 
-    /* =========================
-       BISHERIGE SPIELE LADEN
-    ========================== */
+    /*
+        Aktuellen Zustand speichern,
+        damit Undo weiterhin möglich ist.
+    */
 
-    const games =
-        JSON.parse(
-            localStorage.getItem(
-                "pingpoint_games"
-            )
-        ) || [];
+    saveActiveGame();
 
-
-    /* =========================
-       SPIEL SPEICHERN
-    ========================== */
-
-    games.push(activeGame);
-
-
-    localStorage.setItem(
-        "pingpoint_games",
-        JSON.stringify(games)
-    );
-
-
-    /* =========================
-       AKTIVES SPIEL LÖSCHEN
-    ========================== */
-
-    localStorage.removeItem(
-        "pingpoint_active_game"
-    );
-
-
-    activeGame = null;
-
-
-    /* =========================
-       STARTSEITE AKTUALISIEREN
-    ========================== */
-
-    showView("home");
-
-    updateHome();
+    renderScoreboard();
 
 }
 
@@ -887,9 +1134,41 @@ function confirmExitGame() {
     }
 
 
+    let message;
+
+
+    /*
+        =================================
+        SPIEL BEREITS GEWONNEN
+        =================================
+    */
+
+    if (activeGame.finished) {
+
+        message =
+            "Möchtest du das Spiel beenden und speichern?";
+
+    }
+
+
+    /*
+        =================================
+        SPIEL NOCH NICHT BEENDET
+        =================================
+    */
+
+    else {
+
+        message =
+            "Möchtest du das aktuelle Spiel wirklich verlassen?\n\n" +
+            "Der bisherige Spielstand geht dabei verloren.";
+
+    }
+
+
     const answer =
         confirm(
-            "Möchtest du das aktuelle Spiel wirklich verlassen?\n\nDer bisherige Spielstand geht dabei verloren."
+            message
         );
 
 
@@ -897,6 +1176,51 @@ function confirmExitGame() {
         return;
     }
 
+
+    /*
+        =================================
+        ABGESCHLOSSENES SPIEL SPEICHERN
+        =================================
+    */
+
+    if (activeGame.finished) {
+
+        const games =
+            JSON.parse(
+                localStorage.getItem(
+                    "pingpoint_games"
+                )
+            ) || [];
+
+
+        /*
+            Spiel nur einmal speichern.
+
+            Falls aus irgendeinem Grund
+            bereits vorhanden, nicht
+            doppelt speichern.
+        */
+
+        games.push(
+            activeGame
+        );
+
+
+        localStorage.setItem(
+            "pingpoint_games",
+            JSON.stringify(
+                games
+            )
+        );
+
+    }
+
+
+    /*
+        =================================
+        AKTIVES SPIEL LÖSCHEN
+        =================================
+    */
 
     localStorage.removeItem(
         "pingpoint_active_game"
@@ -906,6 +1230,14 @@ function confirmExitGame() {
     activeGame = null;
 
 
+    /*
+        =================================
+        ZUR STARTSEITE
+        =================================
+    */
+
     showView("home");
+
+    updateHome();
 
 }
