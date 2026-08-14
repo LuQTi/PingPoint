@@ -9,7 +9,33 @@
 
 function showNewGame() {
 
+    /* =========================
+       NEUES SPIEL ZURÜCKSETZEN
+    ========================== */
+
+    gameConfig.mode = "single";
+    gameConfig.bestOf = 3;
+    gameConfig.pointsToWin = 11;
+
+
+    /* =========================
+       ALTE CUSTOM DROPDOWNS
+       SICHER SCHLIESSEN
+    ========================== */
+
+    closeAllCustomPlayerDropdowns();
+
+
+    /* =========================
+       ANSICHT ÖFFNEN
+    ========================== */
+
     showView("newGame");
+
+
+    /* =========================
+       NEUES SPIEL AUFBAUEN
+    ========================== */
 
     buildNewGame();
 
@@ -169,43 +195,9 @@ function buildNewGame() {
                 <!-- EINZEL -->
 
                 <div
-                    id="singlePlayers"
-                    class="player-selection"
-                >
-
-                    <div class="select-group">
-
-                        <label>
-                            Spieler 1
-                        </label>
-
-                        <select
-                            id="player1"
-                            class="select-input"
-                        ></select>
-
-                    </div>
-
-
-                    <div class="vs">
-                        VS
-                    </div>
-
-
-                    <div class="select-group">
-
-                        <label>
-                            Spieler 2
-                        </label>
-
-                        <select
-                            id="player2"
-                            class="select-input"
-                        ></select>
-
-                    </div>
-
-                </div>
+    id="singlePlayers"
+    class="player-selection"
+></div>
 
 
                 <!-- DOPPEL -->
@@ -214,58 +206,7 @@ function buildNewGame() {
     id="doublePlayers"
     class="double-selection"
     style="display:none;"
->
-
-    <div class="double-team team-left">
-
-        <div class="team-label">
-            Team 1
-        </div>
-
-        <div class="team-selects">
-
-            <select
-                id="team1player1"
-                class="select-input"
-            ></select>
-
-            <select
-                id="team1player2"
-                class="select-input"
-            ></select>
-
-        </div>
-
-    </div>
-
-
-    <div class="vs team-vs">
-        VS
-    </div>
-
-
-    <div class="double-team team-right">
-
-        <div class="team-label">
-            Team 2
-        </div>
-
-        <div class="team-selects">
-
-            <select
-                id="team2player1"
-                class="select-input"
-            ></select>
-
-            <select
-                id="team2player2"
-                class="select-input"
-            ></select>
-
-        </div>
-
-    </div>
-
+></div>
 </div>
 
 </div>
@@ -628,51 +569,667 @@ function selectMode(mode) {
 }
 
 /* =========================================================
+   CUSTOM PLAYER SELECT
+========================================================= */
+
+function createCustomPlayerSelect(id) {
+
+    const wrapper = document.createElement("div");
+
+    wrapper.className = "custom-player-select";
+    wrapper.dataset.selectId = id;
+
+    wrapper.innerHTML = `
+
+        <select
+            id="${id}"
+            class="select-input custom-hidden-select"
+            tabindex="-1"
+            aria-hidden="true"
+        ></select>
+
+        <button
+            type="button"
+            class="custom-select-button"
+        >
+
+            <span class="custom-select-value">
+                Spieler auswählen
+            </span>
+
+            <span class="custom-select-arrow">
+                ▾
+            </span>
+
+        </button>
+
+    `;
+
+    const button =
+        wrapper.querySelector(
+            ".custom-select-button"
+        );
+
+    button.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+
+            toggleCustomPlayerDropdown(wrapper);
+
+        }
+    );
+
+    return wrapper;
+
+}
+
+
+/* =========================================================
+   DROPDOWN ÖFFNEN / SCHLIESSEN
+========================================================= */
+
+function toggleCustomPlayerDropdown(wrapper) {
+
+    const currentlyOpen =
+        wrapper.classList.contains("open");
+
+    closeAllCustomPlayerDropdowns();
+
+    if (currentlyOpen) {
+        return;
+    }
+
+    openCustomPlayerDropdown(wrapper);
+
+}
+
+
+function openCustomPlayerDropdown(wrapper) {
+
+    const selectId =
+        wrapper.dataset.selectId;
+
+    const select =
+        document.getElementById(selectId);
+
+    if (!select) {
+        return;
+    }
+
+
+    wrapper.classList.add("open");
+
+
+    const menu =
+        document.createElement("div");
+
+    menu.className =
+        "custom-player-dropdown";
+
+
+    /* =========================
+       SUCHFELD
+    ========================== */
+
+    const searchWrapper =
+        document.createElement("div");
+
+    searchWrapper.className =
+        "custom-player-search";
+
+
+    searchWrapper.innerHTML = `
+
+        <span class="custom-search-icon">
+            🔎
+        </span>
+
+        <input
+            type="text"
+            placeholder="Spieler suchen..."
+            autocomplete="off"
+        >
+
+    `;
+
+
+    menu.appendChild(
+        searchWrapper
+    );
+
+
+    /* =========================
+       OPTIONEN
+    ========================== */
+
+    const optionsContainer =
+        document.createElement("div");
+
+    optionsContainer.className =
+        "custom-player-options";
+
+
+    Array.from(select.options)
+        .forEach(option => {
+
+            if (!option.value) {
+                return;
+            }
+
+
+            const optionButton =
+                document.createElement("button");
+
+            optionButton.type =
+                "button";
+
+            optionButton.className =
+                "custom-player-option";
+
+
+            if (
+                option.value ===
+                select.value
+            ) {
+
+                optionButton.classList.add(
+                    "selected"
+                );
+
+            }
+
+
+            optionButton.dataset.value =
+                option.value;
+
+            optionButton.innerHTML = `
+
+                <span class="custom-option-avatar">
+                    👤
+                </span>
+
+                <span class="custom-option-name">
+                    ${escapeHtml(option.textContent.replace(/^👤\s*/, ""))}
+                </span>
+
+                <span class="custom-option-check">
+                    ✓
+                </span>
+
+            `;
+
+
+            optionButton.addEventListener(
+    "click",
+    function (event) {
+
+        event.stopPropagation();
+
+        /* =========================
+           BEREITS AUSGEWÄHLT
+           → AUSWAHL AUFHEBEN
+        ========================== */
+
+        if (
+            select.value ===
+            option.value
+        ) {
+
+            select.value = "";
+
+        }
+
+        /* =========================
+           NOCH NICHT AUSGEWÄHLT
+           → SPIELER AUSWÄHLEN
+        ========================== */
+
+        else {
+
+            select.value =
+                option.value;
+
+        }
+
+
+        /* =========================
+           CHANGE AUSLÖSEN
+        ========================== */
+
+        select.dispatchEvent(
+            new Event(
+                "change",
+                {
+                    bubbles: true
+                }
+            )
+        );
+
+
+        /* =========================
+           ANZEIGE AKTUALISIEREN
+        ========================== */
+
+        updateCustomPlayerSelect(
+            wrapper
+        );
+
+
+        /* =========================
+           DROPDOWN SCHLIESSEN
+        ========================== */
+
+        closeAllCustomPlayerDropdowns();
+
+    }
+);
+
+
+            optionsContainer.appendChild(
+                optionButton
+            );
+
+        });
+
+
+    menu.appendChild(
+        optionsContainer
+    );
+
+
+    document.body.appendChild(
+        menu
+    );
+
+
+    /* =========================
+       POSITIONIEREN
+    ========================== */
+
+    positionCustomPlayerDropdown(
+        wrapper,
+        menu
+    );
+
+
+    /* =========================
+       SUCHEN
+    ========================== */
+
+    const searchInput =
+        searchWrapper.querySelector(
+            "input"
+        );
+
+
+    searchInput.addEventListener(
+        "input",
+        function () {
+
+            const search =
+                this.value
+                    .trim()
+                    .toLowerCase();
+
+
+            const options =
+                optionsContainer.querySelectorAll(
+                    ".custom-player-option"
+                );
+
+
+            options.forEach(option => {
+
+                const name =
+                    option
+                        .querySelector(
+                            ".custom-option-name"
+                        )
+                        .textContent
+                        .toLowerCase();
+
+
+                option.style.display =
+                    name.includes(search)
+                        ? "flex"
+                        : "none";
+
+            });
+
+        }
+    );
+
+
+    setTimeout(
+        function () {
+
+            searchInput.focus();
+
+        },
+        0
+    );
+
+
+    /* =========================
+       SCROLL / RESIZE
+    ========================== */
+
+    wrapper._customDropdown =
+        menu;
+
+
+    wrapper._customPositionHandler =
+        function () {
+
+            if (
+                document.body.contains(menu)
+            ) {
+
+                positionCustomPlayerDropdown(
+                    wrapper,
+                    menu
+                );
+
+            }
+
+        };
+
+
+    window.addEventListener(
+        "scroll",
+        wrapper._customPositionHandler,
+        true
+    );
+
+
+    window.addEventListener(
+        "resize",
+        wrapper._customPositionHandler
+    );
+
+}
+
+
+/* =========================================================
+   DROPDOWN POSITIONIEREN
+========================================================= */
+
+function positionCustomPlayerDropdown(
+    wrapper,
+    menu
+) {
+
+    const rect =
+        wrapper
+            .querySelector(
+                ".custom-select-button"
+            )
+            .getBoundingClientRect();
+
+
+    const menuHeight =
+        Math.min(
+            menu.scrollHeight,
+            300
+        );
+
+
+    const spaceBelow =
+        window.innerHeight -
+        rect.bottom;
+
+
+    const spaceAbove =
+        rect.top;
+
+
+    let top;
+
+
+    if (
+        spaceBelow < menuHeight &&
+        spaceAbove > spaceBelow
+    ) {
+
+        top =
+            rect.top -
+            menuHeight -
+            6;
+
+    }
+
+    else {
+
+        top =
+            rect.bottom +
+            6;
+
+    }
+
+
+    menu.style.position =
+        "fixed";
+
+    menu.style.left =
+        rect.left + "px";
+
+    menu.style.top =
+        top + "px";
+
+    menu.style.width =
+        rect.width + "px";
+
+}
+
+
+/* =========================================================
+   DROPDOWN SCHLIESSEN
+========================================================= */
+
+function closeAllCustomPlayerDropdowns() {
+
+    document
+        .querySelectorAll(
+            ".custom-player-select.open"
+        )
+        .forEach(wrapper => {
+
+            wrapper.classList.remove(
+                "open"
+            );
+
+
+            if (
+                wrapper._customDropdown
+            ) {
+
+                wrapper._customDropdown.remove();
+
+                wrapper._customDropdown =
+                    null;
+
+            }
+
+
+            if (
+                wrapper._customPositionHandler
+            ) {
+
+                window.removeEventListener(
+                    "scroll",
+                    wrapper._customPositionHandler,
+                    true
+                );
+
+                window.removeEventListener(
+                    "resize",
+                    wrapper._customPositionHandler
+                );
+
+                wrapper._customPositionHandler =
+                    null;
+
+            }
+
+        });
+
+}
+
+
+document.addEventListener(
+    "click",
+    function () {
+
+        closeAllCustomPlayerDropdowns();
+
+    }
+);
+
+
+/* =========================================================
+   AUSGEWÄHLTEN SPIELER ANZEIGEN
+========================================================= */
+
+function updateCustomPlayerSelect(
+    wrapper
+) {
+
+    const selectId =
+        wrapper.dataset.selectId;
+
+    const select =
+        document.getElementById(
+            selectId
+        );
+
+    const valueElement =
+        wrapper.querySelector(
+            ".custom-select-value"
+        );
+
+
+    if (
+        !select ||
+        !valueElement
+    ) {
+        return;
+    }
+
+
+    const selectedOption =
+        select.options[
+            select.selectedIndex
+        ];
+
+
+    if (
+        !selectedOption ||
+        !selectedOption.value
+    ) {
+
+        valueElement.textContent =
+            "Spieler auswählen";
+
+        wrapper.classList.remove(
+            "has-value"
+        );
+
+        return;
+
+    }
+
+
+    valueElement.textContent =
+        selectedOption.textContent
+            .replace(/^👤\s*/, "");
+
+
+    wrapper.classList.add(
+        "has-value"
+    );
+
+}
+
+
+/* =========================================================
+   ALLE CUSTOM SELECTS AKTUALISIEREN
+========================================================= */
+
+function updateAllCustomPlayerSelects() {
+
+    document
+        .querySelectorAll(
+            ".custom-player-select"
+        )
+        .forEach(wrapper => {
+
+            updateCustomPlayerSelect(
+                wrapper
+            );
+
+        });
+
+}
+
+/* =========================================================
    SPIELER-SELECTS AKTUALISIEREN
 ========================================================= */
 
 function populatePlayerSelects() {
 
     const ids = [
+
         "player1",
         "player2",
+
         "team1player1",
         "team1player2",
+
         "team2player1",
         "team2player2"
+
     ];
 
 
     const selectedValues = {};
 
 
-    /*
-       Aktuelle Auswahl merken
-    */
+    /* =========================
+       AKTUELLE AUSWAHL MERKEN
+    ========================== */
 
     ids.forEach(id => {
 
         const select =
             document.getElementById(id);
 
-        if (select && select.value) {
+
+        if (
+            select &&
+            select.value
+        ) {
 
             selectedValues[id] =
-                String(select.value);
+                String(
+                    select.value
+                );
 
         }
 
     });
 
 
-    /*
-       Selects neu aufbauen
-    */
+    /* =========================
+       SELECTS AUFBAUEN
+    ========================== */
 
     ids.forEach(id => {
 
         const select =
             document.getElementById(id);
+
 
         if (!select) {
             return;
@@ -683,14 +1240,31 @@ function populatePlayerSelects() {
             selectedValues[id] || "";
 
 
-        select.innerHTML = `
+        select.innerHTML = "";
 
-            <option value="">
-                Spieler auswählen
-            </option>
 
-        `;
+        /* =========================
+           LEERE OPTION
+        ========================== */
 
+        const emptyOption =
+            document.createElement(
+                "option"
+            );
+
+        emptyOption.value = "";
+
+        emptyOption.textContent =
+            "Spieler auswählen";
+
+        select.appendChild(
+            emptyOption
+        );
+
+
+        /* =========================
+           SPIELER
+        ========================== */
 
         players.forEach(player => {
 
@@ -698,31 +1272,34 @@ function populatePlayerSelects() {
                 String(player.id);
 
 
-            /*
-               Prüfen, ob Spieler bereits
-               in einem anderen Select steckt
-            */
-
             const alreadySelected =
-                Object.keys(selectedValues).some(
+                Object.keys(
+                    selectedValues
+                ).some(
                     otherId => {
 
                         return (
                             otherId !== id &&
-                            selectedValues[otherId] === playerId
+                            selectedValues[
+                                otherId
+                            ] === playerId
                         );
 
                     }
                 );
 
 
-            if (alreadySelected) {
+            if (
+                alreadySelected
+            ) {
                 return;
             }
 
 
             const option =
-                document.createElement("option");
+                document.createElement(
+                    "option"
+                );
 
 
             option.value =
@@ -730,17 +1307,20 @@ function populatePlayerSelects() {
 
 
             option.textContent =
+                "👤 " +
                 player.name;
 
 
-            select.appendChild(option);
+            select.appendChild(
+                option
+            );
 
         });
 
 
-        /*
-           Eigene Auswahl wiederherstellen
-        */
+        /* =========================
+           AUSWAHL WIEDERHERSTELLEN
+        ========================== */
 
         if (currentValue) {
 
@@ -750,6 +1330,9 @@ function populatePlayerSelects() {
         }
 
     });
+
+
+    updateAllCustomPlayerSelects();
 
 }
 
@@ -826,17 +1409,30 @@ function updatePlayerSelectOptions() {
 
 /*=========================================*/
 
+/* =========================================================
+   SPIELER-AUSWAHL RENDERN
+========================================================= */
+
 function renderNewGamePlayerSelection() {
 
     const singlePlayers =
-        document.getElementById("singlePlayers");
+        document.getElementById(
+            "singlePlayers"
+        );
 
     const doublePlayers =
-        document.getElementById("doublePlayers");
+        document.getElementById(
+            "doublePlayers"
+        );
 
-    if (!singlePlayers || !doublePlayers) {
+
+    if (
+        !singlePlayers ||
+        !doublePlayers
+    ) {
         return;
     }
+
 
     const requiredPlayers =
         gameConfig.mode === "single"
@@ -848,10 +1444,15 @@ function renderNewGamePlayerSelection() {
        NICHT GENÜGEND SPIELER
     ========================== */
 
-    if (players.length < requiredPlayers) {
+    if (
+        players.length <
+        requiredPlayers
+    ) {
 
         const missingPlayers =
-            requiredPlayers - players.length;
+            requiredPlayers -
+            players.length;
+
 
         const gameType =
             gameConfig.mode === "single"
@@ -879,9 +1480,7 @@ function renderNewGamePlayerSelection() {
 
                 <small>
                     Noch ${missingPlayers}
-                    ${missingPlayers === 1
-                        ? "Spieler"
-                        : "Spieler"} hinzufügen
+                    Spieler hinzufügen
                 </small>
 
                 <button
@@ -896,7 +1495,9 @@ function renderNewGamePlayerSelection() {
         `;
 
 
-        if (gameConfig.mode === "single") {
+        if (
+            gameConfig.mode === "single"
+        ) {
 
             singlePlayers.innerHTML =
                 message;
@@ -929,112 +1530,200 @@ function renderNewGamePlayerSelection() {
 
 
     /* =========================
-       GENÜGEND SPIELER
+       EINZEL
     ========================== */
 
-    if (gameConfig.mode === "single") {
+    if (
+        gameConfig.mode === "single"
+    ) {
 
-        singlePlayers.innerHTML = `
-
-            <div class="select-group">
-
-                <label>
-                    Spieler 1
-                </label>
-
-                <select
-                    id="player1"
-                    class="select-input"
-                ></select>
-
-            </div>
+        singlePlayers.innerHTML = "";
 
 
-            <div class="vs">
-                VS
-            </div>
+        singlePlayers.appendChild(
+            createSelectGroup(
+                "Spieler 1",
+                "player1"
+            )
+        );
 
 
-            <div class="select-group">
+        const vs =
+            document.createElement("div");
 
-                <label>
-                    Spieler 2
-                </label>
+        vs.className = "vs";
 
-                <select
-                    id="player2"
-                    class="select-input"
-                ></select>
+        vs.textContent = "VS";
 
-            </div>
 
-        `;
+        singlePlayers.appendChild(
+            vs
+        );
+
+
+        singlePlayers.appendChild(
+            createSelectGroup(
+                "Spieler 2",
+                "player2"
+            )
+        );
 
     }
+
+
+    /* =========================
+       DOPPEL
+    ========================== */
 
     else {
 
-        doublePlayers.innerHTML = `
-
-            <div class="double-team team-left">
-
-                <div class="team-label">
-                    Team 1
-                </div>
-
-                <div class="team-selects">
-
-                    <select
-                        id="team1player1"
-                        class="select-input"
-                    ></select>
-
-                    <select
-                        id="team1player2"
-                        class="select-input"
-                    ></select>
-
-                </div>
-
-            </div>
+        doublePlayers.innerHTML = "";
 
 
-            <div class="vs team-vs">
-                VS
-            </div>
+        doublePlayers.appendChild(
+            createTeam(
+                "Team 1",
+                "team-left",
+                [
+                    "team1player1",
+                    "team1player2"
+                ]
+            )
+        );
 
 
-            <div class="double-team team-right">
+        const vs =
+            document.createElement("div");
 
-                <div class="team-label">
-                    Team 2
-                </div>
+        vs.className =
+            "vs team-vs";
 
-                <div class="team-selects">
+        vs.textContent =
+            "VS";
 
-                    <select
-                        id="team2player1"
-                        class="select-input"
-                    ></select>
 
-                    <select
-                        id="team2player2"
-                        class="select-input"
-                    ></select>
+        doublePlayers.appendChild(
+            vs
+        );
 
-                </div>
 
-            </div>
-
-        `;
+        doublePlayers.appendChild(
+            createTeam(
+                "Team 2",
+                "team-right",
+                [
+                    "team2player1",
+                    "team2player2"
+                ]
+            )
+        );
 
     }
 
+
+    /* =========================
+       SELECTS AUFBAUEN
+    ========================== */
 
     populatePlayerSelects();
 
 }
 
+/* =========================================================
+   SELECT-GRUPPE
+========================================================= */
+
+function createSelectGroup(
+    label,
+    id
+) {
+
+    const group =
+        document.createElement("div");
+
+    group.className =
+        "select-group";
+
+
+    const labelElement =
+        document.createElement("label");
+
+    labelElement.textContent =
+        label;
+
+
+    group.appendChild(
+        labelElement
+    );
+
+
+    group.appendChild(
+        createCustomPlayerSelect(id)
+    );
+
+
+    return group;
+
+}
+
+
+/* =========================================================
+   TEAM ERSTELLEN
+========================================================= */
+
+function createTeam(
+    label,
+    className,
+    ids
+) {
+
+    const team =
+        document.createElement("div");
+
+    team.className =
+        "double-team " +
+        className;
+
+
+    const teamLabel =
+        document.createElement("div");
+
+    teamLabel.className =
+        "team-label";
+
+    teamLabel.textContent =
+        label;
+
+
+    team.appendChild(
+        teamLabel
+    );
+
+
+    const selects =
+        document.createElement("div");
+
+    selects.className =
+        "team-selects";
+
+
+    ids.forEach(id => {
+
+        selects.appendChild(
+            createCustomPlayerSelect(id)
+        );
+
+    });
+
+
+    team.appendChild(
+        selects
+    );
+
+
+    return team;
+
+}
 
 /* =========================================================
    BEST OF
@@ -1701,10 +2390,13 @@ function connectGameInputs() {
 
         "player1",
         "player2",
+
         "team1player1",
         "team1player2",
+
         "team2player1",
         "team2player2",
+
         "customPoints"
 
     ];
@@ -1721,22 +2413,32 @@ function connectGameInputs() {
         }
 
 
-        element.addEventListener(
-            "change",
+        /* =========================
+           CHANGE
+        ========================== */
+
+        element.onchange =
             function () {
 
                 populatePlayerSelects();
 
+                updateAllCustomPlayerSelects();
+
                 updateGamePreview();
 
-            }
-        );
+            };
 
 
-        element.addEventListener(
-            "input",
-            updateGamePreview
-        );
+        /* =========================
+           INPUT
+        ========================== */
+
+        element.oninput =
+            function () {
+
+                updateGamePreview();
+
+            };
 
     });
 
