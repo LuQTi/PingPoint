@@ -837,8 +837,10 @@ select:focus-visible {
 
     display: grid;
 
-    grid-template-columns:
-        1fr 40px 1fr;
+    .player-selection,
+.double-selection {
+    grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
+}
 
     align-items: center;
 
@@ -885,6 +887,13 @@ select:focus-visible {
     width: 100%;
 }
 
+.select-group,
+.double-team,
+.custom-player-select,
+.custom-select-button {
+    min-width: 0;
+    width: 100%;
+}
 
 /* =========================================================
    ECHTEN SELECT AUSBLENDEN
