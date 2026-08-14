@@ -87,7 +87,7 @@ function buildPlayersView() {
 
             <div
                 id="addPlayerBox"
-                class="add-player-box"
+                class="add-player-box active"
             >
 
                 <input
