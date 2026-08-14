@@ -143,28 +143,21 @@ function buildScoreboard() {
 
             <header class="score-header">
 
-                <button
-                    class="score-back"
-                    onclick="confirmExitGame()"
-                >
-                    ←
-                </button>
-
-
                 <div class="score-title">
 
-                    <span id="scoreSetLabel">
+    		  <div id="scoreSetLabel">
+                    <span>
                         Satz 1
                     </span>
+                  </div>
 
-                    <small id="scoreBestOfLabel">
+                  <div id="scoreBestOfLabel">
+                    <small>
                         Best of 3
                     </small>
+                  </div>
 
                 </div>
-
-
-                <div class="score-header-spacer"></div>
 
             </header>
 
