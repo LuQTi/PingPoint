@@ -224,7 +224,7 @@ select:focus-visible {
     -webkit-overflow-scrolling: touch;
 
     padding-bottom: calc(
-        90px + env(safe-area-inset-bottom, 0px)
+        75px + env(safe-area-inset-bottom, 0px)
     );
 
     scrollbar-width: none;
@@ -3652,10 +3652,7 @@ select:focus-visible {
     }
 
     .scoreboard-content {
-        padding:
-            14px
-            12px
-            90px;
+        padding: 8px;
     }
 
 
@@ -3668,7 +3665,7 @@ select:focus-visible {
 
         border-radius: 16px;
 
-        margin-bottom: 12px;
+        margin: 16px 0 8px 0;
     }
 
     .set-team {
@@ -3700,6 +3697,8 @@ select:focus-visible {
             minmax(0, 1fr);
 
         min-height: 310px;
+
+	margin-bottom: 16px;
     }
 
     .score-side {
