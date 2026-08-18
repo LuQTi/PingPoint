@@ -4056,3 +4056,640 @@ select:focus-visible {
         font-size: 11px;
     }
 }
+
+/* =========================================================
+   GAME OVERLAY
+========================================================= */
+
+.game-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding:
+        20px
+        16px
+        calc(
+            20px +
+            env(safe-area-inset-bottom, 0px)
+        );
+
+    visibility: hidden;
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        opacity 0.22s ease,
+        visibility 0.22s ease;
+}
+
+
+/* =========================================================
+   OVERLAY AKTIV
+========================================================= */
+
+.game-overlay.active {
+    visibility: visible;
+
+    opacity: 1;
+
+    pointer-events: auto;
+}
+
+
+/* =========================================================
+   HINTERGRUND
+========================================================= */
+
+.game-overlay-backdrop {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        rgba(
+            5,
+            9,
+            20,
+            0.78
+        );
+
+    backdrop-filter:
+        blur(8px);
+
+    -webkit-backdrop-filter:
+        blur(8px);
+
+    opacity: 0;
+
+    transition:
+        opacity 0.25s ease;
+}
+
+
+.game-overlay.active
+.game-overlay-backdrop {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.game-overlay-card {
+    position: relative;
+
+    z-index: 1;
+
+    width: 100%;
+
+    max-width: 390px;
+
+    background:
+        linear-gradient(
+            145deg,
+            var(--bg-card-2),
+            var(--bg-card)
+        );
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: var(--radius-xl);
+
+    padding:
+        28px
+        22px
+        22px;
+
+    text-align: center;
+
+    box-shadow:
+        0 25px 70px
+        rgba(0, 0, 0, 0.45);
+
+    transform:
+        translateY(15px)
+        scale(0.97);
+
+    opacity: 0;
+
+    transition:
+        transform 0.25s ease,
+        opacity 0.25s ease;
+}
+
+
+.game-overlay.active
+.game-overlay-card {
+    transform:
+        translateY(0)
+        scale(1);
+
+    opacity: 1;
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.game-overlay-icon {
+    width: 64px;
+    height: 64px;
+
+    margin:
+        0 auto
+        18px;
+
+    border-radius: 20px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        var(--danger-soft);
+
+    border:
+        1px solid
+        var(--danger-border);
+
+    font-size: 30px;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================================
+   TITEL
+========================================================= */
+
+.game-overlay-title {
+    margin: 0;
+
+    color: var(--text-main);
+
+    font-size: 22px;
+
+    line-height: 1.2;
+
+    font-weight: 900;
+
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+.game-overlay-message {
+    margin:
+        12px
+        auto
+        24px;
+
+    max-width: 330px;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   BUTTON-BEREICH
+========================================================= */
+
+.game-overlay-actions {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    gap: 8px;
+
+    width: 100%;
+}
+
+
+/* =========================================================
+   OVERLAY BUTTONS
+========================================================= */
+
+.overlay-button {
+    min-height: 52px;
+
+    border-radius: 14px;
+
+    padding:
+        8px
+        8px;
+
+    border:
+        1px solid
+        transparent;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    color: var(--text-main);
+
+    transition:
+        transform 0.12s ease,
+        background 0.15s ease,
+        border-color 0.15s ease,
+        filter 0.15s ease;
+}
+
+
+.overlay-button span {
+    font-size: 10px;
+
+    line-height: 1;
+
+    font-weight: 700;
+}
+
+
+.overlay-button:active {
+    transform: scale(0.94);
+}
+
+
+.overlay-button-undo,
+.overlay-button-no,
+.overlay-button-finish {
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        filter 0.18s ease;
+}
+
+
+/* =========================================================
+   GEMEINSAMER HOVER
+========================================================= */
+
+.overlay-button-undo:hover,
+.overlay-button-no:hover,
+.overlay-button-finish:hover {
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 20px
+        rgba(0, 0, 0, 0.14);
+}
+
+
+/* =========================================================
+   UNDO
+========================================================= */
+
+.overlay-button-undo {
+
+    background:
+        var(--bg-soft);
+
+    border-color:
+        var(--border);
+
+    color:
+        var(--text-secondary);
+}
+
+
+.overlay-button-undo:hover {
+
+    background:
+        var(--bg-card-2);
+
+    border-color:
+        var(--primary-border);
+
+    color:
+        var(--text-main);
+}
+
+
+/* =========================================================
+   NEIN
+========================================================= */
+
+.overlay-button-no {
+
+    background:
+        var(--danger-soft);
+
+    border-color:
+        var(--danger-border);
+
+    color:
+        var(--danger);
+}
+
+
+.overlay-button-no:hover {
+
+    background:
+        rgba(
+            255,
+            113,
+            133,
+            0.15
+        );
+
+    border-color:
+        rgba(
+            255,
+            113,
+            133,
+            0.40
+        );
+
+    color:
+        var(--danger);
+
+    box-shadow:
+        0 8px 20px
+        rgba(
+            255,
+            113,
+            133,
+            0.14
+        );
+}
+
+
+/* =========================================================
+   JA / BEENDEN
+========================================================= */
+
+.overlay-button-finish {
+
+    background:
+        var(--primary);
+
+    color:
+        var(--text-dark);
+
+    border-color:
+        var(--primary);
+
+    box-shadow:
+        0 8px 22px
+        rgba(
+            24,
+            201,
+            149,
+            0.18
+        );
+}
+
+
+.overlay-button-finish:hover {
+
+    filter:
+        brightness(1.05);
+
+    box-shadow:
+        0 8px 20px
+        rgba(
+            24,
+            201,
+            149,
+            0.24
+        );
+}
+
+
+/* =========================================================
+   ACTIVE / TIPPEN
+========================================================= */
+
+.overlay-button-undo:active,
+.overlay-button-no:active,
+.overlay-button-finish:active {
+
+    transform:
+        translateY(0);
+
+    box-shadow:
+        0 4px 10px
+        rgba(0, 0, 0, 0.10);
+}
+
+/* =========================================================
+   GEWINNER-OVERLAY
+========================================================= */
+
+.game-overlay.winner-overlay
+.game-overlay-card {
+    border-color:
+        var(--primary-border);
+
+    box-shadow:
+        0 25px 80px
+        rgba(
+            24,
+            201,
+            149,
+            0.15
+        );
+}
+
+
+/* Gewinner-Icon */
+
+.game-overlay.winner-overlay
+.game-overlay-icon {
+    background:
+        var(--primary-soft-2);
+
+    border-color:
+        var(--primary-border);
+
+    color:
+        var(--primary);
+
+    box-shadow:
+        0 10px 35px
+        rgba(
+            24,
+            201,
+            149,
+            0.12
+        );
+}
+
+
+/* Gewinner-Titel */
+
+.game-overlay.winner-overlay
+.game-overlay-title {
+    color:
+        var(--primary);
+}
+
+
+/* =========================================================
+   WINNER MESSAGE
+========================================================= */
+
+.game-overlay.winner-overlay
+.game-overlay-message {
+    color:
+        var(--text-secondary);
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .game-overlay {
+        padding:
+            16px
+            14px
+            calc(
+                16px +
+                env(safe-area-inset-bottom, 0px)
+            );
+    }
+
+    .game-overlay-card {
+        max-width: 100%;
+
+        border-radius:
+            var(--radius-xl);
+
+        padding:
+            24px
+            18px
+            18px;
+    }
+
+    .game-overlay-icon {
+        width: 58px;
+        height: 58px;
+
+        margin-bottom: 15px;
+
+        border-radius: 18px;
+
+        font-size: 27px;
+    }
+
+    .game-overlay-title {
+        font-size: 20px;
+    }
+
+    .game-overlay-message {
+        margin:
+            10px
+            auto
+            20px;
+
+        font-size: 12px;
+
+        line-height: 1.5;
+    }
+
+    .game-overlay-actions {
+        gap: 7px;
+    }
+
+    .overlay-button {
+        min-height: 50px;
+
+        border-radius: 13px;
+
+        font-size: 17px;
+    }
+
+    .overlay-button span {
+        font-size: 9px;
+    }
+}
+
+
+/* =========================================================
+   SEHR KLEINE HANDYS
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .game-overlay-card {
+        padding:
+            21px
+            14px
+            14px;
+    }
+
+    .game-overlay-icon {
+        width: 52px;
+        height: 52px;
+
+        margin-bottom: 13px;
+
+        font-size: 24px;
+    }
+
+    .game-overlay-title {
+        font-size: 18px;
+    }
+
+    .game-overlay-message {
+        font-size: 11px;
+
+        margin-bottom: 17px;
+    }
+
+    .overlay-button {
+        min-height: 46px;
+
+        padding:
+            6px
+            5px;
+
+        font-size: 16px;
+    }
+
+    .overlay-button span {
+        font-size: 8px;
+    }
+}

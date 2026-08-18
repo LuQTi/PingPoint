@@ -308,12 +308,89 @@ function buildScoreboard() {
 
             </main>
 
+
+            <!-- =========================
+                 BEENDEN / GEWINNER OVERLAY
+            ========================== -->
+
+            <div
+                id="gameOverlay"
+                class="game-overlay"
+            >
+
+                <div
+                    class="game-overlay-backdrop"
+                    onclick="closeGameOverlay()"
+                ></div>
+
+
+                <div class="game-overlay-card">
+
+                    <div
+                        id="gameOverlayIcon"
+                        class="game-overlay-icon"
+                    >
+                        ⚠️
+                    </div>
+
+
+                    <h2
+                        id="gameOverlayTitle"
+                    >
+                        Spiel beenden?
+                    </h2>
+
+
+                    <div
+                        id="gameOverlayMessage"
+                        class="game-overlay-message"
+                    >
+                        Möchtest du das Spiel wirklich beenden?
+                    </div>
+
+
+                    <div class="game-overlay-actions">
+
+    <button 
+        id="gameOverlayUndo" 
+        class="overlay-button overlay-button-undo" 
+        onclick="overlayUndo()" 
+    > 
+        ↶ 
+        <span>Undo</span> 
+    </button> 
+
+
+    <button 
+        id="gameOverlayNo" 
+        class="overlay-button overlay-button-no" 
+        onclick="closeGameOverlay()" 
+    > 
+        ✕
+        <span>Nein</span> 
+    </button>
+
+
+    <button 
+        id="gameOverlayFinish" 
+        class="overlay-button overlay-button-finish" 
+        onclick="overlayFinish()" 
+    > 
+        ✓ 
+        <span>Ja</span> 
+    </button> 
+
+</div>
+
+                </div>
+
+            </div>
+
         </div>
 
     `;
 
 }
-
 
 /* =========================
    SCOREBOARD RENDERN
@@ -1154,9 +1231,10 @@ function finishMatch(winner) {
         return;
     }
 
-    /*
-        Spiel als beendet markieren
-    */
+
+    /* =========================
+       MATCH ALS BEENDET MARKIEREN
+    ========================== */
 
     activeGame.finished = true;
 
@@ -1167,24 +1245,27 @@ function finishMatch(winner) {
 
 
     /*
-        Spielstand speichern
-
-        WICHTIG:
-        Das Spiel wird hier NICHT
-        aus localStorage gelöscht.
+        Spiel speichern.
+        Noch NICHT in die Historie.
     */
 
     saveActiveGame();
 
 
     /*
-        Auf dem Scoreboard bleiben
+        Scoreboard aktualisieren
     */
 
     renderScoreboard();
 
-}
 
+    /*
+        Gewinner-Overlay automatisch öffnen
+    */
+
+    confirmExitGame();
+
+}
 /* =========================
    AKTIVES SPIEL SPEICHERN
 ========================== */
@@ -1207,7 +1288,7 @@ function saveActiveGame() {
 
 
 /* =========================
-   SPIEL BEENDEN
+   BEENDEN OVERLAY
 ========================== */
 
 function confirmExitGame() {
@@ -1221,54 +1302,232 @@ function confirmExitGame() {
     }
 
 
-    let message;
+    const overlay =
+        document.getElementById(
+            "gameOverlay"
+        );
 
+    const title =
+        document.getElementById(
+            "gameOverlayTitle"
+        );
 
-    /*
-        =================================
-        SPIEL BEREITS GEWONNEN
-        =================================
-    */
+    const message =
+        document.getElementById(
+            "gameOverlayMessage"
+        );
 
-    if (activeGame.finished) {
+    const icon =
+        document.getElementById(
+            "gameOverlayIcon"
+        );
 
-        message =
-            "Möchtest du das Spiel beenden und speichern?";
-
-    }
-
-
-    /*
-        =================================
-        SPIEL NOCH NICHT BEENDET
-        =================================
-    */
-
-    else {
-
-        message =
-            "Möchtest du das aktuelle Spiel wirklich verlassen?\n\n" +
-            "Der bisherige Spielstand geht dabei verloren.";
-
-    }
-
-
-    const answer =
-        confirm(
-            message
+    const undoButton =
+        document.getElementById(
+            "gameOverlayUndo"
         );
 
 
-    if (!answer) {
+    if (
+        !overlay ||
+        !title ||
+        !message ||
+        !icon ||
+        !undoButton
+    ) {
         return;
     }
 
 
-    /*
-        =================================
-        FERTIGES SPIEL SPEICHERN
-        =================================
-    */
+   /* =========================
+   MATCH IST BEREITS GEWONNEN
+========================== */
+
+if (activeGame.finished) {
+
+    const names =
+        getScorePlayerNames();
+
+    const winnerName =
+        activeGame.winner === 1
+            ? names.player1
+            : names.player2;
+
+
+    overlay.classList.add(
+        "winner-overlay"
+    );
+
+
+    icon.textContent =
+        "🏆";
+
+
+    title.textContent =
+        winnerName +
+        " gewinnt!";
+
+
+    message.textContent =
+        "Das Spiel ist beendet. " +
+        "Möchtest du das Ergebnis speichern " +
+        "oder den letzten Punkt zurücknehmen?";
+
+
+    /* =========================
+       UNDO ANZEIGEN
+    ========================== */
+
+    undoButton.style.display =
+        "flex";
+
+
+    /* =========================
+       NEIN AUSBLENDEN
+       (nur für laufendes Spiel)
+    ========================== */
+
+    const noButton =
+        document.getElementById(
+            "gameOverlayNo"
+        );
+
+    if (noButton) {
+
+        noButton.style.display =
+            "none";
+
+    }
+
+
+    /* =========================
+       BEENDEN → JA
+    ========================== */
+
+    const finishButton =
+        document.getElementById(
+            "gameOverlayFinish"
+        );
+
+    if (finishButton) {
+
+        finishButton.innerHTML = `
+            ✓
+            <span>Beenden</span>
+        `;
+
+    }
+
+
+    overlay.classList.add(
+        "active"
+    );
+
+
+    return;
+
+}
+
+
+    /* =========================
+   SPIEL NOCH NICHT BEENDET
+========================== */
+
+overlay.classList.remove(
+    "winner-overlay"
+);
+
+icon.textContent = "⚠️";
+
+title.textContent =
+    "Spiel beenden?";
+
+message.textContent =
+    "Möchtest du das aktuelle Spiel wirklich verlassen? " +
+    "Der bisherige Spielstand geht dabei verloren.";
+
+undoButton.style.display =
+    "none";
+
+/* NEIN anzeigen */
+const noButton =
+    document.getElementById(
+        "gameOverlayNo"
+    );
+
+if (noButton) {
+
+    noButton.style.display =
+        "flex";
+
+}
+
+/* JA / BEENDEN */
+const finishButton =
+    document.getElementById(
+        "gameOverlayFinish"
+    );
+
+if (finishButton) {
+
+    finishButton.innerHTML = `
+        ✓
+        <span>Ja</span>
+    `;
+
+}
+
+overlay.classList.add(
+    "active"
+);
+
+}
+
+
+/* =========================
+   OVERLAY SCHLIESSEN
+========================== */
+
+function closeGameOverlay() {
+
+    const overlay =
+        document.getElementById(
+            "gameOverlay"
+        );
+
+    if (!overlay) {
+        return;
+    }
+
+
+    overlay.classList.remove(
+        "active"
+    );
+
+    overlay.classList.remove(
+        "winner-overlay"
+    );
+
+}
+
+
+/* =========================
+   OVERLAY → BEENDEN
+========================== */
+
+function overlayFinish() {
+
+    if (!activeGame) {
+        return;
+    }
+
+
+    closeGameOverlay();
+
+
+    /* =========================
+       FERTIGES SPIEL SPEICHERN
+    ========================== */
 
     if (activeGame.finished) {
 
@@ -1303,11 +1562,6 @@ function confirmExitGame() {
             ) || [];
 
 
-        /*
-            Spiel vorne in die Historie
-            einfügen
-        */
-
         history.unshift(
             match
         );
@@ -1321,10 +1575,6 @@ function confirmExitGame() {
         );
 
 
-        /*
-            Spielerstatistik aktualisieren
-        */
-
         if (
             typeof updatePlayerStats ===
             "function"
@@ -1337,65 +1587,31 @@ function confirmExitGame() {
         }
 
 
-        /*
-            =================================
-            AKTIVES SPIEL LÖSCHEN
-            =================================
-        */
-
         localStorage.removeItem(
             "pingpoint_active_game"
         );
 
 
-        /*
-            Aktives Spiel merken
-        */
-
         activeGame = null;
 
 
-        /*
-            =================================
-            HISTORIE ÖFFNEN
-            =================================
-        */
-
         showView("games");
 
-
-        /*
-            Historie aufbauen
-        */
-
         buildGamesView();
-
-
-        /*
-            Das gerade gespeicherte Spiel
-            direkt öffnen.
-
-            Da wir es mit unshift()
-            an Position 0 eingefügt haben,
-            ist der Index 0.
-        */
 
         renderGameDetails(
             0,
             0
         );
 
-
         return;
 
     }
 
 
-    /*
-        =================================
-        NICHT BEENDETES SPIEL VERLASSEN
-        =================================
-    */
+    /* =========================
+       NICHT BEENDETES SPIEL
+    ========================== */
 
     localStorage.removeItem(
         "pingpoint_active_game"
@@ -1408,5 +1624,18 @@ function confirmExitGame() {
     showView("home");
 
     updateHome();
+
+}
+
+
+/* =========================
+   OVERLAY → UNDO
+========================== */
+
+function overlayUndo() {
+
+    closeGameOverlay();
+
+    undoPoint();
 
 }
