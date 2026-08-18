@@ -10,20 +10,18 @@
 function showNewGame() {
 
     /* =========================
-       NEUES SPIEL ZURÜCKSETZEN
-    ========================== */
-
-    gameConfig.mode = "single";
-    gameConfig.bestOf = 3;
-    gameConfig.pointsToWin = 11;
-
-
-    /* =========================
        ALTE CUSTOM DROPDOWNS
        SICHER SCHLIESSEN
     ========================== */
 
     closeAllCustomPlayerDropdowns();
+
+
+    /* =========================
+       LETZTE EINSTELLUNGEN LADEN
+    ========================== */
+
+    loadLastGameSettings();
 
 
     /* =========================
@@ -43,9 +41,158 @@ function showNewGame() {
 
     connectGameInputs();
 
+    updateGameSettingsUI();
+
     updateGamePreview();
 
     updateStartGameButton();
+
+}
+
+
+/* =========================================================
+   GELADENE SPIELEINSTELLUNGEN IN DER UI ANZEIGEN
+========================================================= */
+
+function updateGameSettingsUI() {
+
+    /* =========================
+       SPIELMODUS
+    ========================== */
+
+    const singleOption =
+        document.getElementById("singleOption");
+
+    const doubleOption =
+        document.getElementById("doubleOption");
+
+    if (singleOption) {
+
+        singleOption.classList.toggle(
+            "selected",
+            gameConfig.mode === "single"
+        );
+
+    }
+
+    if (doubleOption) {
+
+        doubleOption.classList.toggle(
+            "selected",
+            gameConfig.mode === "double"
+        );
+
+    }
+
+
+    /* =========================
+       BEST OF
+    ========================== */
+
+    document
+        .querySelectorAll(".segment")
+        .forEach(element => {
+
+            element.classList.remove("active");
+
+        });
+
+    const bestOfButton =
+        document.getElementById(
+            "bestOf" + gameConfig.bestOf
+        );
+
+    if (bestOfButton) {
+
+        bestOfButton.classList.add("active");
+
+    }
+
+
+    /* =========================
+       PUNKTE
+    ========================== */
+
+    document
+        .querySelectorAll(".point-option")
+        .forEach(element => {
+
+            element.classList.remove("active");
+
+        });
+
+    const customInput =
+        document.getElementById("customPoints");
+
+
+    if (gameConfig.pointsToWin === null) {
+
+        const customButton =
+            document.getElementById("pointsCustom");
+
+        if (customButton) {
+
+            customButton.classList.add("active");
+
+        }
+
+        if (customInput) {
+
+            customInput.style.display =
+                "block";
+
+            /* gespeicherte eigene Punktzahl */
+
+            try {
+
+                const saved =
+                    localStorage.getItem(
+                        "pingpoint_last_game_settings"
+                    );
+
+                if (saved) {
+
+                    const settings =
+                        JSON.parse(saved);
+
+                    customInput.value =
+                        settings.customPoints || "";
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.warn(error);
+
+            }
+
+        }
+
+    }
+
+    else {
+
+        const pointsButton =
+            document.getElementById(
+                "points" + gameConfig.pointsToWin
+            );
+
+        if (pointsButton) {
+
+            pointsButton.classList.add("active");
+
+        }
+
+        if (customInput) {
+
+            customInput.style.display =
+                "none";
+
+        }
+
+    }
 
 }
 
@@ -432,11 +579,6 @@ function buildNewGame() {
 
 }
 
-
-/* =========================================================
-   SPIELMODUS
-========================================================= */
-
 /* =========================================================
    SPIELMODUS
 ========================================================= */
@@ -570,6 +712,7 @@ function selectMode(mode) {
 
     updateGamePreview();
     updateStartGameButton();
+    saveLastGameSettings();
 
 }
 
@@ -1210,20 +1353,80 @@ function populatePlayerSelects() {
         const select =
             document.getElementById(id);
 
-
         if (
             select &&
             select.value
         ) {
 
             selectedValues[id] =
-                String(
-                    select.value
-                );
+                String(select.value);
 
         }
 
     });
+
+
+    /* =========================
+       LETZTE AUSWAHL LADEN,
+       WENN NOCH NICHTS AUSGEWÄHLT IST
+    ========================== */
+
+    const lastPlayers =
+        getLastSelectedPlayers();
+
+
+    if (gameConfig.mode === "single") {
+
+        if (
+            !selectedValues.player1 &&
+            lastPlayers[0]
+        ) {
+
+            selectedValues.player1 =
+                String(lastPlayers[0]);
+
+        }
+
+
+        if (
+            !selectedValues.player2 &&
+            lastPlayers[1]
+        ) {
+
+            selectedValues.player2 =
+                String(lastPlayers[1]);
+
+        }
+
+    }
+
+    else {
+
+        const doubleIds = [
+
+            "team1player1",
+            "team1player2",
+            "team2player1",
+            "team2player2"
+
+        ];
+
+
+        doubleIds.forEach((id, index) => {
+
+            if (
+                !selectedValues[id] &&
+                lastPlayers[index]
+            ) {
+
+                selectedValues[id] =
+                    String(lastPlayers[index]);
+
+            }
+
+        });
+
+    }
 
 
     /* =========================
@@ -1234,7 +1437,6 @@ function populatePlayerSelects() {
 
         const select =
             document.getElementById(id);
-
 
         if (!select) {
             return;
@@ -1253,9 +1455,7 @@ function populatePlayerSelects() {
         ========================== */
 
         const emptyOption =
-            document.createElement(
-                "option"
-            );
+            document.createElement("option");
 
         emptyOption.value = "";
 
@@ -1285,26 +1485,20 @@ function populatePlayerSelects() {
 
                         return (
                             otherId !== id &&
-                            selectedValues[
-                                otherId
-                            ] === playerId
+                            selectedValues[otherId] === playerId
                         );
 
                     }
                 );
 
 
-            if (
-                alreadySelected
-            ) {
+            if (alreadySelected) {
                 return;
             }
 
 
             const option =
-                document.createElement(
-                    "option"
-                );
+                document.createElement("option");
 
 
             option.value =
@@ -1312,8 +1506,7 @@ function populatePlayerSelects() {
 
 
             option.textContent =
-                "👤 " +
-                player.name;
+                "👤 " + player.name;
 
 
             select.appendChild(
@@ -1340,6 +1533,7 @@ function populatePlayerSelects() {
     updateAllCustomPlayerSelects();
 
 }
+
 
 /*==========================================*/
 
@@ -1769,6 +1963,7 @@ function selectBestOf(number) {
 
     updateGamePreview();
     updateStartGameButton();
+    saveLastGameSettings();
 
 }
 
@@ -1862,6 +2057,7 @@ function selectPoints(points) {
 
     updateGamePreview();
     updateStartGameButton();
+    saveLastGameSettings();
 
 }
 
@@ -1885,6 +2081,225 @@ function getPlayerName(id) {
         : null;
 
 }
+
+
+/* =========================================================
+   LETZTE SPIELERAUSWAHL SPEICHERN
+========================================================= */
+
+function saveLastSelectedPlayers() {
+
+    if (gameConfig.mode === "single") {
+
+        const player1 =
+            document.getElementById("player1")?.value || "";
+
+        const player2 =
+            document.getElementById("player2")?.value || "";
+
+        localStorage.setItem(
+            "pingpoint_last_players_single",
+            JSON.stringify([
+                player1,
+                player2
+            ])
+        );
+
+    }
+
+    else {
+
+        const playersDouble = [
+            document.getElementById("team1player1")?.value || "",
+            document.getElementById("team1player2")?.value || "",
+            document.getElementById("team2player1")?.value || "",
+            document.getElementById("team2player2")?.value || ""
+        ];
+
+        localStorage.setItem(
+            "pingpoint_last_players_double",
+            JSON.stringify(playersDouble)
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LETZTE SPIELERAUSWAHL LADEN
+========================================================= */
+
+function getLastSelectedPlayers() {
+
+    const key =
+        gameConfig.mode === "single"
+            ? "pingpoint_last_players_single"
+            : "pingpoint_last_players_double";
+
+    try {
+
+        const saved =
+            localStorage.getItem(key);
+
+        if (!saved) {
+            return [];
+        }
+
+        const parsed =
+            JSON.parse(saved);
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+
+    }
+
+    catch (error) {
+
+        console.warn(
+            "Letzte Spielerauswahl konnte nicht geladen werden.",
+            error
+        );
+
+        return [];
+
+    }
+
+}
+
+
+/* =========================================================
+   LETZTE SPIELEINSTELLUNGEN SPEICHERN
+========================================================= */
+
+function saveLastGameSettings() {
+
+    const customPointsInput =
+        document.getElementById("customPoints");
+
+    const settings = {
+
+        mode:
+            gameConfig.mode,
+
+        bestOf:
+            gameConfig.bestOf,
+
+        pointsToWin:
+            gameConfig.pointsToWin,
+
+        customPoints:
+            customPointsInput?.value || ""
+
+    };
+
+    localStorage.setItem(
+        "pingpoint_last_game_settings",
+        JSON.stringify(settings)
+    );
+
+}
+
+
+/* =========================================================
+   LETZTE SPIELEINSTELLUNGEN LADEN
+========================================================= */
+
+function loadLastGameSettings() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                "pingpoint_last_game_settings"
+            );
+
+        if (!saved) {
+            return;
+        }
+
+        const settings =
+            JSON.parse(saved);
+
+        /* =========================
+           MODUS
+        ========================== */
+
+        if (
+            settings.mode === "single" ||
+            settings.mode === "double"
+        ) {
+
+            gameConfig.mode =
+                settings.mode;
+
+        }
+
+
+        /* =========================
+           BEST OF
+        ========================== */
+
+        if (
+            [3, 5, 7].includes(
+                Number(settings.bestOf)
+            )
+        ) {
+
+            gameConfig.bestOf =
+                Number(settings.bestOf);
+
+        }
+
+
+        /* =========================
+           PUNKTE
+        ========================== */
+
+        if (
+            settings.pointsToWin === null
+        ) {
+
+            gameConfig.pointsToWin =
+                null;
+
+        }
+
+        else if (
+            [11, 21].includes(
+                Number(settings.pointsToWin)
+            )
+        ) {
+
+            gameConfig.pointsToWin =
+                Number(settings.pointsToWin);
+
+        }
+
+        /* Eigene Punktzahl */
+        else if (
+            settings.customPoints
+        ) {
+
+            gameConfig.pointsToWin =
+                null;
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.warn(
+            "Letzte Spieleinstellungen konnten nicht geladen werden.",
+            error
+        );
+
+    }
+
+}
+
 
 
 /* =========================================================
@@ -2504,6 +2919,13 @@ function startConfiguredGame() {
     }
 
 
+/* =========================
+       LETZTE AUSWAHL SPEICHERN
+    ========================== */
+
+    saveLastSelectedPlayers();
+
+
     /* =========================
        AKTIVES SPIEL ERSTELLEN
     ========================== */
@@ -2612,6 +3034,10 @@ function connectGameInputs() {
         element.onchange =
             function () {
 
+		saveLastSelectedPlayers();
+
+		saveLastGameSettings();
+
                 populatePlayerSelects();
 
                 updateAllCustomPlayerSelects();
@@ -2629,6 +3055,8 @@ function connectGameInputs() {
 
         element.oninput =
             function () {
+
+		saveLastGameSettings();
 
                 updateGamePreview();
 
