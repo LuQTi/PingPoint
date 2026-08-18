@@ -10,7 +10,14 @@ let gameConfig = {
 
     pointsToWin: 11,
 
-    players: []
+    players: [],
+
+    /*
+        Startaufschläger
+        1 = Spieler/Team 1
+        2 = Spieler/Team 2
+    */
+    server: 1
 
 };
 

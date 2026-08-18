@@ -1780,7 +1780,7 @@ select:focus-visible {
 .score-side {
     position: relative;
 
-    border: none;
+    border: 2px solid transparent;
 
     border-radius: var(--radius-xl);
 
@@ -1802,8 +1802,10 @@ select:focus-visible {
 
     transition:
         transform 0.12s ease,
-        box-shadow 0.12s ease,
-        filter 0.12s ease;
+        box-shadow 0.2s ease,
+        filter 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
 
     user-select: none;
 
@@ -1813,21 +1815,27 @@ select:focus-visible {
 }
 
 
-/* Player 1 */
+/* =========================================================
+   PLAYER 1
+========================================================= */
 
 .score-side-1 {
     background:
         linear-gradient(
             145deg,
-            var(--primary),
-            var(--primary-dark)
+            #24304b,
+            #18223a
         );
 
-    box-shadow: var(--shadow-primary);
+    box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, 0.22);
 }
 
 
-/* Player 2 */
+/* =========================================================
+   PLAYER 2
+========================================================= */
 
 .score-side-2 {
     background:
@@ -1842,12 +1850,113 @@ select:focus-visible {
         rgba(0, 0, 0, 0.22);
 }
 
+
+/* =========================================================
+   AKTUELLER AUFSCHLÄGER
+========================================================= */
+
+/*
+   JavaScript setzt automatisch:
+
+   .leading
+
+   auf den Spieler, der aktuell aufschlägt.
+
+   Dadurch spielt es keine Rolle mehr,
+   ob Spieler 1 links oder Spieler 2 rechts steht.
+*/
+
+.score-side.leading {
+    background:
+        linear-gradient(
+            145deg,
+            var(--primary),
+            var(--primary-dark)
+        );
+
+    border-color:
+        var(--primary);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(0, 200, 120, 0.12),
+
+        0 14px 35px
+        rgba(0, 200, 120, 0.28);
+
+    filter: brightness(1.05);
+}
+
+
+/* Kleine Aufschlag-Markierung */
+
+.score-side.leading::before {
+    content: "AUFSCHLAG";
+
+    position: absolute;
+
+    top: 16px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.16);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.25);
+
+    color: #ffffff;
+
+    font-size: 10px;
+
+    font-weight: 900;
+
+    letter-spacing: 1.2px;
+
+    white-space: nowrap;
+
+    box-shadow:
+        0 4px 12px
+        rgba(0, 0, 0, 0.12);
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
 .score-side:hover {
     filter: brightness(1.04);
 }
 
+.score-side.leading:hover {
+    filter: brightness(1.08);
+}
+
+
+/* =========================================================
+   ACTIVE / ANTIPPEN
+========================================================= */
+
 .score-side:active {
     transform: scale(0.985);
+}
+
+
+/* =========================================================
+   DEAKTIVIERT – MATCH BEENDET
+========================================================= */
+
+.score-side:disabled {
+    cursor: default;
+
+    opacity: 1;
 }
 
 

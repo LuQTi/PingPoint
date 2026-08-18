@@ -2525,6 +2525,9 @@ function startConfiguredGame() {
         players:
             selectedPlayers,
 
+	server:
+        1,
+
         startedAt:
             new Date().toISOString(),
 
@@ -2536,7 +2539,9 @@ function startConfiguredGame() {
 
             score2: 0,
 
-            points: []
+            points: [],
+
+	   serverHistory: []
 
         }
 

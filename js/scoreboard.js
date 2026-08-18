@@ -24,11 +24,27 @@ function openScoreboard() {
             savedGame
         );
 
+    /*
+        Falls ein älteres Spiel noch
+        keinen Aufschläger gespeichert hat,
+        startet Spieler/Team 1.
+    */
+    if (
+        activeGame.server !== 1 &&
+        activeGame.server !== 2
+    ) {
+
+        activeGame.server = 1;
+
+        saveActiveGame();
+
+    }
+
     showView("scoreboard");
 
     renderScoreboard();
-}
 
+}
 
 /* =========================
    SPIELER-NAMEN
@@ -657,7 +673,7 @@ if (status) {
 
 
 /* =========================
-   SPIELER HERVORHEBEN
+   AUFSCHLÄGER HERVORHEBEN
 ========================== */
 
 function updateScoreHighlights() {
@@ -666,43 +682,41 @@ function updateScoreHighlights() {
         return;
     }
 
-
     const side1 =
         document.getElementById(
             "scoreSide1"
         );
-
 
     const side2 =
         document.getElementById(
             "scoreSide2"
         );
 
-
     if (!side1 || !side2) {
         return;
     }
 
-
-    const score1 =
-        activeGame.currentSet.score1;
-
-
-    const score2 =
-        activeGame.currentSet.score2;
-
+    /*
+        Alte Hervorhebung entfernen
+    */
 
     side1.classList.remove(
         "leading"
     );
-
 
     side2.classList.remove(
         "leading"
     );
 
 
-    if (score1 > score2) {
+    /*
+        Spieler/Team mit Aufschlag
+        grün hervorheben
+    */
+
+    if (
+        activeGame.server === 1
+    ) {
 
         side1.classList.add(
             "leading"
@@ -710,7 +724,9 @@ function updateScoreHighlights() {
 
     }
 
-    else if (score2 > score1) {
+    else if (
+        activeGame.server === 2
+    ) {
 
         side2.classList.add(
             "leading"
@@ -720,6 +736,110 @@ function updateScoreHighlights() {
 
 }
 
+/* =========================
+   AUFSCHLAG AKTUALISIEREN
+========================== */
+
+function updateServer() {
+
+    if (!activeGame) {
+        return;
+    }
+
+    const currentSet =
+        activeGame.currentSet;
+
+    if (!currentSet) {
+        return;
+    }
+
+
+    const score1 =
+        currentSet.score1;
+
+    const score2 =
+        currentSet.score2;
+
+
+    /*
+        Zielpunktzahl des Satzes
+
+        Beispiel:
+        11 Punkte → Verlängerung ab 10:10
+        21 Punkte → Verlängerung ab 20:20
+    */
+
+    const target =
+        Number(activeGame.pointsToWin);
+
+
+    if (!target || target < 2) {
+        return;
+    }
+
+
+    /*
+        Gesamtzahl der Punkte
+    */
+
+    const totalPoints =
+        score1 + score2;
+
+
+    /*
+        =================================
+        VERLÄNGERUNG
+        =================================
+
+        Sobald beide Spieler
+        Zielpunktzahl - 1 erreicht haben,
+        wechselt der Aufschlag nach
+        jedem einzelnen Punkt.
+    */
+
+    const deuceStart =
+        target - 1;
+
+
+    if (
+        score1 >= deuceStart &&
+        score2 >= deuceStart
+    ) {
+
+        if (totalPoints > 0) {
+
+            activeGame.server =
+                activeGame.server === 1
+                    ? 2
+                    : 1;
+
+        }
+
+        return;
+    }
+
+
+    /*
+        =================================
+        NORMALE REGEL
+        =================================
+
+        Aufschlag wechselt alle 2 Punkte.
+    */
+
+    if (
+        totalPoints > 0 &&
+        totalPoints % 2 === 0
+    ) {
+
+        activeGame.server =
+            activeGame.server === 1
+                ? 2
+                : 1;
+
+    }
+
+}
 
 /* =========================
    PUNKT GEBEN
@@ -731,69 +851,72 @@ function addPoint(player) {
         return;
     }
 
-
-    /*
-        Nach Matchende keine neuen
-        Punkte mehr zulassen.
-    */
-
     if (activeGame.finished) {
         return;
     }
 
+    const currentSet = activeGame.currentSet;
 
-    const currentSet =
-        activeGame.currentSet;
+    if (!currentSet) {
+        return;
+    }
 
+    /* =========================
+       AUFSCHLAG VOR DEM PUNKT
+       SPEICHERN
+    ========================== */
 
-    /*
-        Punkt-Historie speichern
-    */
+    if (!Array.isArray(currentSet.serverHistory)) {
+        currentSet.serverHistory = [];
+    }
 
-    currentSet.points.push(
-        player
+    currentSet.serverHistory.push(
+        activeGame.server
     );
 
 
-    /*
-        Punktestand erhöhen
-    */
+    /* =========================
+       PUNKT SPEICHERN
+    ========================== */
+
+    currentSet.points.push(player);
+
+
+    /* =========================
+       PUNKTSTAND
+    ========================== */
 
     if (player === 1) {
-
         currentSet.score1++;
-
     }
-
     else {
-
         currentSet.score2++;
-
     }
 
 
-    /*
-        Erst speichern
-    */
+    /* =========================
+       AUFSCHLAG
+    ========================== */
+
+    updateServer();
+
+
+    /* =========================
+       SPEICHERN
+    ========================== */
 
     saveActiveGame();
-
-
-    /*
-        Scoreboard aktualisieren
-    */
 
     renderScoreboard();
 
 
-    /*
-        Prüfen ob Satz gewonnen wurde
-    */
+    /* =========================
+       SATZ PRÜFEN
+    ========================== */
 
     checkSetWinner();
 
 }
-
 
 /* =========================
    UNDO
@@ -806,25 +929,12 @@ function undoPoint() {
     }
 
 
-    /*
-        =================================
-        FALL 1:
-        MATCH WAR BEREITS BEENDET
-        =================================
-
-        Der letzte Satz befindet sich
-        bereits in activeGame.sets.
-
-        Deshalb müssen wir zuerst den
-        letzten abgeschlossenen Satz
-        wieder zurückholen.
-    */
+    /* ==================================================
+       FALL 1:
+       MATCH WAR BEREITS BEENDET
+    ================================================== */
 
     if (activeGame.finished) {
-
-        /*
-            Match-Ende zurücknehmen
-        */
 
         activeGame.finished = false;
 
@@ -832,22 +942,11 @@ function undoPoint() {
         delete activeGame.finishedAt;
 
 
-        /*
-            Letzten gewonnenen Satz holen
-        */
-
-        if (
-            activeGame.sets.length > 0
-        ) {
+        if (activeGame.sets.length > 0) {
 
             const previousSet =
                 activeGame.sets.pop();
 
-
-            /*
-                Diesen Satz wieder zum
-                aktuellen Satz machen
-            */
 
             activeGame.currentSet = {
 
@@ -864,35 +963,78 @@ function undoPoint() {
                         ? [
                             ...previousSet.points
                         ]
+                        : [],
+
+                serverHistory:
+                    Array.isArray(
+                        previousSet.serverHistory
+                    )
+                        ? [
+                            ...previousSet.serverHistory
+                        ]
                         : []
 
             };
 
 
-            /*
-                Jetzt den Matchball /
-                letzten Punkt zurücknehmen
-            */
+            /* =========================
+               LETZTEN PUNKT ENTFERNEN
+            ========================== */
 
             if (
                 activeGame.currentSet.points.length > 0
             ) {
 
-                const lastPoint =
-                    activeGame.currentSet.points.pop();
+                activeGame.currentSet.points.pop();
 
 
-                if (lastPoint === 1) {
+                /* =========================
+                   AUFSCHLAG ZURÜCKSETZEN
+                ========================== */
 
-                    activeGame.currentSet.score1--;
+                if (
+                    activeGame.currentSet.serverHistory.length > 0
+                ) {
+
+                    activeGame.server =
+                        activeGame.currentSet
+                            .serverHistory
+                            .pop();
 
                 }
 
-                else if (lastPoint === 2) {
+                else {
 
-                    activeGame.currentSet.score2--;
+                    /* Fallback für alte Spiele */
+
+                    activeGame.server =
+                        activeGame.server === 1
+                            ? 2
+                            : 1;
 
                 }
+
+
+                /* =========================
+                   SCORE NEU BERECHNEN
+                ========================== */
+
+                activeGame.currentSet.score1 = 0;
+                activeGame.currentSet.score2 = 0;
+
+                activeGame.currentSet.points.forEach(
+                    point => {
+
+                        if (point === 1) {
+                            activeGame.currentSet.score1++;
+                        }
+
+                        else if (point === 2) {
+                            activeGame.currentSet.score2++;
+                        }
+
+                    }
+                );
 
             }
 
@@ -904,16 +1046,13 @@ function undoPoint() {
         renderScoreboard();
 
         return;
-
     }
 
 
-    /*
-        =================================
-        FALL 2:
-        AKTUELLER SATZ HAT PUNKTE
-        =================================
-    */
+    /* ==================================================
+       FALL 2:
+       AKTUELLER SATZ HAT PUNKTE
+    ================================================== */
 
     const currentSet =
         activeGame.currentSet;
@@ -921,24 +1060,66 @@ function undoPoint() {
 
     if (
         currentSet &&
+        Array.isArray(currentSet.points) &&
         currentSet.points.length > 0
     ) {
 
-        const lastPoint =
-            currentSet.points.pop();
+        /* =========================
+           LETZTEN PUNKT ENTFERNEN
+        ========================== */
+
+        currentSet.points.pop();
 
 
-        if (lastPoint === 1) {
+        /* =========================
+           AUFSCHLAG VOR DEM PUNKT
+           WIEDERHERSTELLEN
+        ========================== */
 
-            currentSet.score1--;
+        if (
+            Array.isArray(
+                currentSet.serverHistory
+            ) &&
+            currentSet.serverHistory.length > 0
+        ) {
+
+            activeGame.server =
+                currentSet.serverHistory.pop();
 
         }
 
-        else if (lastPoint === 2) {
+        else {
 
-            currentSet.score2--;
+            /* Fallback für alte Spiele */
+
+            activeGame.server =
+                activeGame.server === 1
+                    ? 2
+                    : 1;
 
         }
+
+
+        /* =========================
+           SCORE NEU BERECHNEN
+        ========================== */
+
+        currentSet.score1 = 0;
+        currentSet.score2 = 0;
+
+        currentSet.points.forEach(
+            point => {
+
+                if (point === 1) {
+                    currentSet.score1++;
+                }
+
+                else if (point === 2) {
+                    currentSet.score2++;
+                }
+
+            }
+        );
 
 
         saveActiveGame();
@@ -946,18 +1127,14 @@ function undoPoint() {
         renderScoreboard();
 
         return;
-
     }
 
 
-    /*
-        =================================
-        FALL 3:
-        AKTUELLER SATZ IST LEER
-        =================================
-
-        Wir gehen einen Satz zurück.
-    */
+    /* ==================================================
+       FALL 3:
+       AKTUELLER SATZ IST LEER
+       UND ES GIBT KEINEN VORHERIGEN SATZ
+    ================================================== */
 
     if (
         activeGame.sets.length === 0
@@ -968,16 +1145,13 @@ function undoPoint() {
         renderScoreboard();
 
         return;
-
     }
 
 
-    /*
-        =================================
-        FALL 4:
-        LETZTEN SATZ ZURÜCKHOLEN
-        =================================
-    */
+    /* ==================================================
+       FALL 4:
+       LETZTEN SATZ ZURÜCKHOLEN
+    ================================================== */
 
     const previousSet =
         activeGame.sets.pop();
@@ -998,35 +1172,78 @@ function undoPoint() {
                 ? [
                     ...previousSet.points
                 ]
+                : [],
+
+        serverHistory:
+            Array.isArray(
+                previousSet.serverHistory
+            )
+                ? [
+                    ...previousSet.serverHistory
+                ]
                 : []
 
     };
 
 
-    /*
-        Letzten Punkt des Satzes
-        ebenfalls zurücknehmen
-    */
+    /* =========================
+       LETZTEN PUNKT ENTFERNEN
+    ========================== */
 
     if (
         activeGame.currentSet.points.length > 0
     ) {
 
-        const lastPoint =
-            activeGame.currentSet.points.pop();
+        activeGame.currentSet.points.pop();
 
 
-        if (lastPoint === 1) {
+        /* =========================
+           AUFSCHLAG ZURÜCK
+        ========================== */
 
-            activeGame.currentSet.score1--;
+        if (
+            activeGame.currentSet.serverHistory.length > 0
+        ) {
+
+            activeGame.server =
+                activeGame.currentSet
+                    .serverHistory
+                    .pop();
 
         }
 
-        else if (lastPoint === 2) {
+        else {
 
-            activeGame.currentSet.score2--;
+            /* Fallback */
+
+            activeGame.server =
+                activeGame.server === 1
+                    ? 2
+                    : 1;
 
         }
+
+
+        /* =========================
+           SCORE NEU BERECHNEN
+        ========================== */
+
+        activeGame.currentSet.score1 = 0;
+        activeGame.currentSet.score2 = 0;
+
+        activeGame.currentSet.points.forEach(
+            point => {
+
+                if (point === 1) {
+                    activeGame.currentSet.score1++;
+                }
+
+                else if (point === 2) {
+                    activeGame.currentSet.score2++;
+                }
+
+            }
+        );
 
     }
 
@@ -1036,6 +1253,7 @@ function undoPoint() {
     renderScoreboard();
 
 }
+
 
 /* =========================
    SATZ GEWINNER PRÜFEN
@@ -1109,53 +1327,38 @@ function finishCurrentSet(winner) {
         return;
     }
 
-
-    /*
-        Aktuellen Satz kopieren
-    */
+    const currentSet = activeGame.currentSet;
 
     const completedSet = {
 
-        score1:
-            activeGame.currentSet.score1,
+        score1: currentSet.score1,
 
-        score2:
-            activeGame.currentSet.score2,
+        score2: currentSet.score2,
 
-        points:
-            [
-                ...activeGame.currentSet.points
-            ],
+        points: [
+            ...currentSet.points
+        ],
 
-        winner:
-            winner
+        serverHistory:
+            Array.isArray(currentSet.serverHistory)
+                ? [...currentSet.serverHistory]
+                : [],
+
+        winner: winner
 
     };
 
-
-    /*
-        Satz zu den abgeschlossenen
-        Sätzen hinzufügen
-    */
 
     activeGame.sets.push(
         completedSet
     );
 
 
-    /*
-        Benötigte Sätze berechnen
-    */
-
     const setsNeeded =
         Math.ceil(
             activeGame.bestOf / 2
         );
 
-
-    /*
-        Gewonnene Sätze zählen
-    */
 
     const setsWon1 =
         activeGame.sets.filter(
@@ -1171,11 +1374,9 @@ function finishCurrentSet(winner) {
         ).length;
 
 
-    /*
-        =================================
-        MATCH GEWONNEN
-        =================================
-    */
+    /* =========================
+       MATCH GEWONNEN
+    ========================== */
 
     if (
         setsWon1 >= setsNeeded ||
@@ -1187,21 +1388,23 @@ function finishCurrentSet(winner) {
                 ? 1
                 : 2;
 
-
         finishMatch(
             matchWinner
         );
-
 
         return;
     }
 
 
-    /*
-        =================================
-        NEUER SATZ
-        =================================
-    */
+    /* =========================
+       NEUER SATZ
+    ========================== */
+
+    activeGame.server =
+        activeGame.server === 1
+            ? 2
+            : 1;
+
 
     activeGame.currentSet = {
 
@@ -1209,7 +1412,9 @@ function finishCurrentSet(winner) {
 
         score2: 0,
 
-        points: []
+        points: [],
+
+        serverHistory: []
 
     };
 
