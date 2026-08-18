@@ -1633,10 +1633,25 @@ function renderNewGamePlayerSelection() {
     }
 
 
-    const requiredPlayers =
-        gameConfig.mode === "single"
-            ? 2
-            : 4;
+const requiredPlayers =
+    gameConfig.mode === "single"
+        ? 2
+        : 4;
+
+
+/* =========================
+   RICHTIGEN BEREICH ANZEIGEN
+========================= */
+
+singlePlayers.style.display =
+    gameConfig.mode === "single"
+        ? "grid"
+        : "none";
+
+doublePlayers.style.display =
+    gameConfig.mode === "double"
+        ? "grid"
+        : "none";
 
 
     /* =========================
