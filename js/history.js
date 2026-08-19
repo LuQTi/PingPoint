@@ -1143,12 +1143,20 @@ function createCurrentSetTable(
             ? set.points
             : [];
 
+
+    const serverHistory =
+        Array.isArray(set.serverHistory)
+            ? set.serverHistory
+            : [];
+
+
     const setWinner =
         Number(set.score1) > Number(set.score2)
             ? 1
             : Number(set.score2) > Number(set.score1)
                 ? 2
                 : null;
+
 
     const setResultClass =
         setWinner === matchWinner
@@ -1157,6 +1165,10 @@ function createCurrentSetTable(
                 ? "set-lost"
                 : "";
 
+
+    /* =====================================================
+       KEIN PUNKTEVERLAUF
+    ====================================================== */
 
     if (points.length === 0) {
 
@@ -1179,10 +1191,10 @@ function createCurrentSetTable(
                     </div>
 
                     <strong>
-                            ${set.score1}
-                            :
-                            ${set.score2}
-                        </strong>
+                        ${set.score1}
+                        :
+                        ${set.score2}
+                    </strong>
 
                 </div>
 
@@ -1216,6 +1228,10 @@ function createCurrentSetTable(
     let score2 = 0;
 
 
+    /* =====================================================
+       PUNKTE-TABELLE
+    ====================================================== */
+
     const rows =
         points
             .map(
@@ -1230,18 +1246,30 @@ function createCurrentSetTable(
                         );
 
 
+                    /* =========================
+                       SCORE BERECHNEN
+                    ========================== */
+
                     if (
                         player === 1
                     ) {
+
                         score1++;
+
                     }
 
                     else if (
                         player === 2
                     ) {
+
                         score2++;
+
                     }
 
+
+                    /* =========================
+                       SPIELERNAME
+                    ========================== */
 
                     const playerName =
                         player === 1
@@ -1251,6 +1279,10 @@ function createCurrentSetTable(
                                 : "Unbekannt";
 
 
+                    /* =========================
+                       PUNKT-GEWINNER FARBEN
+                    ========================== */
+
                     const playerResultClass =
                         player === matchWinner
                             ? "point-player-winner"
@@ -1258,8 +1290,9 @@ function createCurrentSetTable(
                               (matchWinner === 1 ? 2 : 1)
                                 ? "point-player-loser"
                                 : "";
-			
-			const pointResultClass =
+
+
+                    const pointResultClass =
                         player === matchWinner
                             ? "point-score-winner"
                             : player ===
@@ -1268,13 +1301,76 @@ function createCurrentSetTable(
                                 : "";
 
 
+                    /* =================================================
+                       AUFSCHLÄGER DIESES PUNKTES
+
+                       serverHistory[0] = Aufschläger beim 1. Punkt
+                       serverHistory[1] = Aufschläger beim 2. Punkt
+                       usw.
+                    ================================================== */
+
+                    const server =
+                        serverHistory[index];
+
+
+                    /* =================================================
+                       AUFSCHLAG-FARBE DER PUNKTNUMMER
+
+                       Aufschläger = Sieger → grün
+                       Aufschläger = Verlierer → rot
+                    ================================================== */
+
+                    let pointNumberClass = "";
+
+
+                    if (
+                        server === matchWinner
+                    ) {
+
+                        pointNumberClass =
+                            "point-number-server-winner";
+
+                    }
+
+                    else if (
+                        server === 1 ||
+                        server === 2
+                    ) {
+
+                        pointNumberClass =
+                            "point-number-server-loser";
+
+                    }
+
+
                     return `
 
                         <tr>
 
+                            <!-- PUNKTNUMMER -->
+
                             <td>
-                                ${index + 1}
+
+                                <span
+                                    class="
+                                        point-number
+                                        ${pointNumberClass}
+                                    "
+                                    title="${
+                                        server === 1
+                                            ? `Aufschlag: ${teams.team1}`
+                                            : server === 2
+                                                ? `Aufschlag: ${teams.team2}`
+                                                : "Aufschlag unbekannt"
+                                    }"
+                                >
+                                    ${index + 1}
+                                </span>
+
                             </td>
+
+
+                            <!-- SPIELER DER DEN PUNKT GEWONNEN HAT -->
 
                             <td>
 
@@ -1293,10 +1389,13 @@ function createCurrentSetTable(
 
                             </td>
 
-                            <td class="point-score
-                                    
-                                    ${pointResultClass}
-                                ">
+
+                            <!-- AKTUELLER STAND -->
+
+                            <td class="
+                                point-score
+                                ${pointResultClass}
+                            ">
 
                                 ${score1}
                                 :
@@ -1313,30 +1412,42 @@ function createCurrentSetTable(
             .join("");
 
 
+    /* =====================================================
+       GESAMTE SATZANSICHT
+    ====================================================== */
+
     return `
 
         <div class="set-detail-card">
 
             <div class="set-detail-title">
 
-    <div>
+                <div>
 
-        <span>
-            Satz ${setIndex + 1}
-        </span>
+                    <span>
+                        Satz ${setIndex + 1}
+                    </span>
 
-        <small>
-            ${points.length}
-            Punkte gespielt
-        </small>
+                    <small>
+                        ${points.length}
+                        Punkte gespielt
+                    </small>
 
-    </div>
+                </div>
 
-    <strong class="set-detail-score ${setResultClass}">
-    ${score1} : ${score2}
-</strong>
 
-</div>
+                <strong
+                    class="
+                        set-detail-score
+                        ${setResultClass}
+                    "
+                >
+                    ${score1}
+                    :
+                    ${score2}
+                </strong>
+
+            </div>
 
 
             <div class="point-table-wrapper">
@@ -1379,7 +1490,6 @@ function createCurrentSetTable(
     `;
 
 }
-
 
 /* =========================================================
    PUNKT-SPIELER ERMITTELN

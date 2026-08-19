@@ -3132,6 +3132,24 @@ select:focus-visible {
     text-align: right;
 }
 
+.point-number {
+    font-weight: 700;
+}
+
+
+/* Aufschlag hatte das Siegerteam */
+
+.point-number-server-winner {
+    color: var(--result-won);
+}
+
+
+/* Aufschlag hatte das Verliererteam */
+
+.point-number-server-loser {
+    color: var(--result-lost);
+}
+
 .point-player {
     display: inline-flex;
 
@@ -4805,3 +4823,4 @@ select:focus-visible {
         font-size: 8px;
     }
 }
+

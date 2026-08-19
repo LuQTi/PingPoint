@@ -16,7 +16,6 @@ function openScoreboard() {
         );
 
         return;
-
     }
 
     activeGame =
@@ -40,11 +39,32 @@ function openScoreboard() {
 
     }
 
+    /*
+        Falls der aktuelle Satz noch keinen
+        startingServer besitzt, übernehmen
+        wir den aktuellen Aufschläger.
+    */
+    if (
+        activeGame.currentSet &&
+        (
+            activeGame.currentSet.startingServer !== 1 &&
+            activeGame.currentSet.startingServer !== 2
+        )
+    ) {
+
+        activeGame.currentSet.startingServer =
+            activeGame.server;
+
+        saveActiveGame();
+
+    }
+
     showView("scoreboard");
 
     renderScoreboard();
 
 }
+
 
 /* =========================
    SPIELER-NAMEN
@@ -113,7 +133,6 @@ function getScorePlayerNames() {
                     activeGame.players[1]
                 ) || "Spieler 2"
             ),
-
 
         player2:
 
@@ -367,36 +386,36 @@ function buildScoreboard() {
 
                     <div class="game-overlay-actions">
 
-    <button 
-        id="gameOverlayUndo" 
-        class="overlay-button overlay-button-undo" 
-        onclick="overlayUndo()" 
-    > 
-        ↶ 
-        <span>Undo</span> 
-    </button> 
+                        <button
+                            id="gameOverlayUndo"
+                            class="overlay-button overlay-button-undo"
+                            onclick="overlayUndo()"
+                        >
+                            ↶
+                            <span>Undo</span>
+                        </button>
 
 
-    <button 
-        id="gameOverlayNo" 
-        class="overlay-button overlay-button-no" 
-        onclick="closeGameOverlay()" 
-    > 
-        ✕
-        <span>Nein</span> 
-    </button>
+                        <button
+                            id="gameOverlayNo"
+                            class="overlay-button overlay-button-no"
+                            onclick="closeGameOverlay()"
+                        >
+                            ✕
+                            <span>Nein</span>
+                        </button>
 
 
-    <button 
-        id="gameOverlayFinish" 
-        class="overlay-button overlay-button-finish" 
-        onclick="overlayFinish()" 
-    > 
-        ✓ 
-        <span>Ja</span> 
-    </button> 
+                        <button
+                            id="gameOverlayFinish"
+                            class="overlay-button overlay-button-finish"
+                            onclick="overlayFinish()"
+                        >
+                            ✓
+                            <span>Ja</span>
+                        </button>
 
-</div>
+                    </div>
 
                 </div>
 
@@ -407,6 +426,7 @@ function buildScoreboard() {
     `;
 
 }
+
 
 /* =========================
    SCOREBOARD RENDERN
@@ -421,7 +441,6 @@ function renderScoreboard() {
 
     /*
         Scoreboard immer neu aufbauen.
-        Dadurch sind Namen garantiert aktuell.
     */
 
     buildScoreboard();
@@ -555,15 +574,6 @@ function renderScoreboard() {
 
     /*
         UNDO
-
-        Undo ist möglich wenn:
-
-        - im aktuellen Satz Punkte existieren
-
-        ODER
-
-        - bereits ein abgeschlossener Satz
-          existiert
     */
 
     const undoButton =
@@ -586,47 +596,50 @@ function renderScoreboard() {
     */
 
     const status =
-    document.getElementById(
-        "scoreStatus"
-    );
+        document.getElementById(
+            "scoreStatus"
+        );
 
-if (status) {
 
-    if (activeGame.finished) {
+    if (status) {
 
-        const winnerNames =
-            getScorePlayerNames();
+        if (activeGame.finished) {
 
-        status.innerHTML = `
-            <div class="score-win">
-                <div class="score-win-icon">
-                    🏆
+            const winnerNames =
+                getScorePlayerNames();
+
+            status.innerHTML = `
+                <div class="score-win">
+
+                    <div class="score-win-icon">
+                        🏆
+                    </div>
+
+                    <div class="score-win-title">
+                        ${
+                            activeGame.winner === 1
+                                ? winnerNames.player1
+                                : winnerNames.player2
+                        }
+                    </div>
+
+                    <div class="score-win-subtitle">
+                        gewinnt das Spiel!
+                    </div>
+
                 </div>
+            `;
 
-                <div class="score-win-title">
-                    ${
-                        activeGame.winner === 1
-                            ? winnerNames.player1
-                            : winnerNames.player2
-                    }
-                </div>
+        }
 
-                <div class="score-win-subtitle">
-                    gewinnt das Spiel!
-                </div>
-            </div>
-        `;
+        else {
+
+            status.textContent =
+                "Spiel läuft";
+
+        }
 
     }
-
-    else {
-
-        status.textContent =
-            "Spiel läuft";
-
-    }
-
-}
 
 
     /*
@@ -664,7 +677,7 @@ if (status) {
 
 
     /*
-        AKTIVEN SPIELER HERVORHEBEN
+        AKTIVEN AUFSCHLÄGER HERVORHEBEN
     */
 
     updateScoreHighlights();
@@ -682,23 +695,23 @@ function updateScoreHighlights() {
         return;
     }
 
+
     const side1 =
         document.getElementById(
             "scoreSide1"
         );
+
 
     const side2 =
         document.getElementById(
             "scoreSide2"
         );
 
+
     if (!side1 || !side2) {
         return;
     }
 
-    /*
-        Alte Hervorhebung entfernen
-    */
 
     side1.classList.remove(
         "leading"
@@ -736,6 +749,7 @@ function updateScoreHighlights() {
 
 }
 
+
 /* =========================
    AUFSCHLAG AKTUALISIEREN
 ========================== */
@@ -746,8 +760,10 @@ function updateServer() {
         return;
     }
 
+
     const currentSet =
         activeGame.currentSet;
+
 
     if (!currentSet) {
         return;
@@ -757,24 +773,24 @@ function updateServer() {
     const score1 =
         currentSet.score1;
 
+
     const score2 =
         currentSet.score2;
 
 
-    /*
-        Zielpunktzahl des Satzes
-
-        Beispiel:
-        11 Punkte → Verlängerung ab 10:10
-        21 Punkte → Verlängerung ab 20:20
-    */
-
     const target =
-        Number(activeGame.pointsToWin);
+        Number(
+            activeGame.pointsToWin
+        );
 
 
-    if (!target || target < 2) {
+    if (
+        !target ||
+        target < 2
+    ) {
+
         return;
+
     }
 
 
@@ -787,14 +803,11 @@ function updateServer() {
 
 
     /*
-        =================================
         VERLÄNGERUNG
-        =================================
 
-        Sobald beide Spieler
-        Zielpunktzahl - 1 erreicht haben,
+        Ab z.B. 10:10 bei 11 Punkten
         wechselt der Aufschlag nach
-        jedem einzelnen Punkt.
+        jedem Punkt.
     */
 
     const deuceStart =
@@ -816,13 +829,12 @@ function updateServer() {
         }
 
         return;
+
     }
 
 
     /*
-        =================================
         NORMALE REGEL
-        =================================
 
         Aufschlag wechselt alle 2 Punkte.
     */
@@ -841,6 +853,7 @@ function updateServer() {
 
 }
 
+
 /* =========================
    PUNKT GEBEN
 ========================== */
@@ -851,72 +864,109 @@ function addPoint(player) {
         return;
     }
 
+
     if (activeGame.finished) {
         return;
     }
 
-    const currentSet = activeGame.currentSet;
+
+    const currentSet =
+        activeGame.currentSet;
+
 
     if (!currentSet) {
         return;
     }
 
-    /* =========================
-       AUFSCHLAG VOR DEM PUNKT
-       SPEICHERN
-    ========================== */
 
-    if (!Array.isArray(currentSet.serverHistory)) {
-        currentSet.serverHistory = [];
+    /*
+        Falls alter Spielstand noch keinen
+        startingServer besitzt.
+    */
+
+    if (
+        currentSet.startingServer !== 1 &&
+        currentSet.startingServer !== 2
+    ) {
+
+        currentSet.startingServer =
+            activeGame.server;
+
     }
+
+
+    /*
+        AUFSCHLAG VOR DEM PUNKT SPEICHERN
+    */
+
+    if (
+        !Array.isArray(
+            currentSet.serverHistory
+        )
+    ) {
+
+        currentSet.serverHistory = [];
+
+    }
+
 
     currentSet.serverHistory.push(
         activeGame.server
     );
 
 
-    /* =========================
-       PUNKT SPEICHERN
-    ========================== */
+    /*
+        PUNKT SPEICHERN
+    */
 
-    currentSet.points.push(player);
+    currentSet.points.push(
+        player
+    );
 
 
-    /* =========================
-       PUNKTSTAND
-    ========================== */
+    /*
+        PUNKTSTAND
+    */
 
-    if (player === 1) {
+    if (
+        player === 1
+    ) {
+
         currentSet.score1++;
+
     }
+
     else {
+
         currentSet.score2++;
+
     }
 
 
-    /* =========================
-       AUFSCHLAG
-    ========================== */
+    /*
+        AUFSCHLAG
+    */
 
     updateServer();
 
 
-    /* =========================
-       SPEICHERN
-    ========================== */
+    /*
+        SPEICHERN
+    */
 
     saveActiveGame();
 
     renderScoreboard();
 
 
-    /* =========================
-       SATZ PRÜFEN
-    ========================== */
+    /*
+        SATZ PRÜFEN
+    */
 
     checkSetWinner();
 
 }
+
 
 /* =========================
    UNDO
@@ -939,10 +989,13 @@ function undoPoint() {
         activeGame.finished = false;
 
         delete activeGame.winner;
+
         delete activeGame.finishedAt;
 
 
-        if (activeGame.sets.length > 0) {
+        if (
+            activeGame.sets.length > 0
+        ) {
 
             const previousSet =
                 activeGame.sets.pop();
@@ -972,14 +1025,17 @@ function undoPoint() {
                         ? [
                             ...previousSet.serverHistory
                         ]
-                        : []
+                        : [],
+
+                startingServer:
+                    previousSet.startingServer
 
             };
 
 
-            /* =========================
-               LETZTEN PUNKT ENTFERNEN
-            ========================== */
+            /*
+                LETZTEN PUNKT ENTFERNEN
+            */
 
             if (
                 activeGame.currentSet.points.length > 0
@@ -988,9 +1044,10 @@ function undoPoint() {
                 activeGame.currentSet.points.pop();
 
 
-                /* =========================
-                   AUFSCHLAG ZURÜCKSETZEN
-                ========================== */
+                /*
+                    AUFSCHLAG VOR DEM
+                    LETZTEN PUNKT WIEDERHERSTELLEN
+                */
 
                 if (
                     activeGame.currentSet.serverHistory.length > 0
@@ -1005,32 +1062,43 @@ function undoPoint() {
 
                 else {
 
-                    /* Fallback für alte Spiele */
+                    /*
+                        Fallback für alte Spiele
+                    */
 
                     activeGame.server =
-                        activeGame.server === 1
-                            ? 2
-                            : 1;
+                        activeGame.currentSet
+                            .startingServer;
 
                 }
 
 
-                /* =========================
-                   SCORE NEU BERECHNEN
-                ========================== */
+                /*
+                    SCORE NEU BERECHNEN
+                */
 
                 activeGame.currentSet.score1 = 0;
+
                 activeGame.currentSet.score2 = 0;
+
 
                 activeGame.currentSet.points.forEach(
                     point => {
 
-                        if (point === 1) {
+                        if (
+                            point === 1
+                        ) {
+
                             activeGame.currentSet.score1++;
+
                         }
 
-                        else if (point === 2) {
+                        else if (
+                            point === 2
+                        ) {
+
                             activeGame.currentSet.score2++;
+
                         }
 
                     }
@@ -1046,6 +1114,7 @@ function undoPoint() {
         renderScoreboard();
 
         return;
+
     }
 
 
@@ -1060,21 +1129,23 @@ function undoPoint() {
 
     if (
         currentSet &&
-        Array.isArray(currentSet.points) &&
+        Array.isArray(
+            currentSet.points
+        ) &&
         currentSet.points.length > 0
     ) {
 
-        /* =========================
-           LETZTEN PUNKT ENTFERNEN
-        ========================== */
+        /*
+            LETZTEN PUNKT ENTFERNEN
+        */
 
         currentSet.points.pop();
 
 
-        /* =========================
-           AUFSCHLAG VOR DEM PUNKT
-           WIEDERHERSTELLEN
-        ========================== */
+        /*
+            AUFSCHLAG VOR DEM PUNKT
+            WIEDERHERSTELLEN
+        */
 
         if (
             Array.isArray(
@@ -1084,38 +1155,52 @@ function undoPoint() {
         ) {
 
             activeGame.server =
-                currentSet.serverHistory.pop();
+                currentSet
+                    .serverHistory
+                    .pop();
 
         }
 
         else {
 
-            /* Fallback für alte Spiele */
+            /*
+                Falls keine Historie vorhanden
+                ist, wird der Satzanfang
+                als sichere Basis verwendet.
+            */
 
             activeGame.server =
-                activeGame.server === 1
-                    ? 2
-                    : 1;
+                currentSet.startingServer;
 
         }
 
 
-        /* =========================
-           SCORE NEU BERECHNEN
-        ========================== */
+        /*
+            SCORE NEU BERECHNEN
+        */
 
         currentSet.score1 = 0;
+
         currentSet.score2 = 0;
+
 
         currentSet.points.forEach(
             point => {
 
-                if (point === 1) {
+                if (
+                    point === 1
+                ) {
+
                     currentSet.score1++;
+
                 }
 
-                else if (point === 2) {
+                else if (
+                    point === 2
+                ) {
+
                     currentSet.score2++;
+
                 }
 
             }
@@ -1127,6 +1212,7 @@ function undoPoint() {
         renderScoreboard();
 
         return;
+
     }
 
 
@@ -1145,6 +1231,7 @@ function undoPoint() {
         renderScoreboard();
 
         return;
+
     }
 
 
@@ -1181,14 +1268,17 @@ function undoPoint() {
                 ? [
                     ...previousSet.serverHistory
                 ]
-                : []
+                : [],
+
+        startingServer:
+            previousSet.startingServer
 
     };
 
 
-    /* =========================
-       LETZTEN PUNKT ENTFERNEN
-    ========================== */
+    /*
+        LETZTEN PUNKT ENTFERNEN
+    */
 
     if (
         activeGame.currentSet.points.length > 0
@@ -1197,9 +1287,9 @@ function undoPoint() {
         activeGame.currentSet.points.pop();
 
 
-        /* =========================
-           AUFSCHLAG ZURÜCK
-        ========================== */
+        /*
+            AUFSCHLAG ZURÜCK
+        */
 
         if (
             activeGame.currentSet.serverHistory.length > 0
@@ -1214,36 +1304,58 @@ function undoPoint() {
 
         else {
 
-            /* Fallback */
-
             activeGame.server =
-                activeGame.server === 1
-                    ? 2
-                    : 1;
+                activeGame.currentSet
+                    .startingServer;
 
         }
 
 
-        /* =========================
-           SCORE NEU BERECHNEN
-        ========================== */
+        /*
+            SCORE NEU BERECHNEN
+        */
 
         activeGame.currentSet.score1 = 0;
+
         activeGame.currentSet.score2 = 0;
+
 
         activeGame.currentSet.points.forEach(
             point => {
 
-                if (point === 1) {
+                if (
+                    point === 1
+                ) {
+
                     activeGame.currentSet.score1++;
+
                 }
 
-                else if (point === 2) {
+                else if (
+                    point === 2
+                ) {
+
                     activeGame.currentSet.score2++;
+
                 }
 
             }
         );
+
+    }
+
+    else {
+
+        /*
+            Wenn der Satz nach dem Undo
+            komplett leer ist, startet er
+            wieder mit seinem
+            ursprünglichen Aufschläger.
+        */
+
+        activeGame.server =
+            activeGame.currentSet
+                .startingServer;
 
     }
 
@@ -1266,11 +1378,6 @@ function checkSetWinner() {
     }
 
 
-    /*
-        Falls Match bereits beendet
-        ist nichts mehr prüfen.
-    */
-
     if (activeGame.finished) {
         return;
     }
@@ -1281,7 +1388,9 @@ function checkSetWinner() {
 
 
     const target =
-        activeGame.pointsToWin;
+        Number(
+            activeGame.pointsToWin
+        );
 
 
     const player1Wins =
@@ -1327,24 +1436,42 @@ function finishCurrentSet(winner) {
         return;
     }
 
-    const currentSet = activeGame.currentSet;
+
+    const currentSet =
+        activeGame.currentSet;
+
+
+    /*
+        Abgeschlossenen Satz speichern.
+        startingServer bleibt erhalten!
+    */
 
     const completedSet = {
 
-        score1: currentSet.score1,
+        score1:
+            currentSet.score1,
 
-        score2: currentSet.score2,
+        score2:
+            currentSet.score2,
 
         points: [
             ...currentSet.points
         ],
 
         serverHistory:
-            Array.isArray(currentSet.serverHistory)
-                ? [...currentSet.serverHistory]
+            Array.isArray(
+                currentSet.serverHistory
+            )
+                ? [
+                    ...currentSet.serverHistory
+                ]
                 : [],
 
-        winner: winner
+        startingServer:
+            currentSet.startingServer,
+
+        winner:
+            winner
 
     };
 
@@ -1388,22 +1515,41 @@ function finishCurrentSet(winner) {
                 ? 1
                 : 2;
 
+
         finishMatch(
             matchWinner
         );
 
         return;
+
     }
 
 
     /* =========================
        NEUER SATZ
+
+       GANZ WICHTIG:
+       Der Aufschlag wechselt
+       IMMER zum anderen Spieler.
     ========================== */
 
-    activeGame.server =
-        activeGame.server === 1
+    const previousStartingServer =
+        currentSet.startingServer;
+
+
+    const nextStartingServer =
+        previousStartingServer === 1
             ? 2
             : 1;
+
+
+    /*
+        Neuer Satz beginnt mit
+        dem anderen Spieler.
+    */
+
+    activeGame.server =
+        nextStartingServer;
 
 
     activeGame.currentSet = {
@@ -1414,7 +1560,10 @@ function finishCurrentSet(winner) {
 
         points: [],
 
-        serverHistory: []
+        serverHistory: [],
+
+        startingServer:
+            nextStartingServer
 
     };
 
@@ -1437,9 +1586,9 @@ function finishMatch(winner) {
     }
 
 
-    /* =========================
-       MATCH ALS BEENDET MARKIEREN
-    ========================== */
+    /*
+        MATCH ALS BEENDET MARKIEREN
+    */
 
     activeGame.finished = true;
 
@@ -1471,6 +1620,8 @@ function finishMatch(winner) {
     confirmExitGame();
 
 }
+
+
 /* =========================
    AKTIVES SPIEL SPEICHERN
 ========================== */
@@ -1512,20 +1663,24 @@ function confirmExitGame() {
             "gameOverlay"
         );
 
+
     const title =
         document.getElementById(
             "gameOverlayTitle"
         );
+
 
     const message =
         document.getElementById(
             "gameOverlayMessage"
         );
 
+
     const icon =
         document.getElementById(
             "gameOverlayIcon"
         );
+
 
     const undoButton =
         document.getElementById(
@@ -1540,85 +1695,145 @@ function confirmExitGame() {
         !icon ||
         !undoButton
     ) {
+
         return;
+
     }
 
 
-   /* =========================
-   MATCH IST BEREITS GEWONNEN
-========================== */
+    /* =========================
+       MATCH IST BEREITS GEWONNEN
+    ========================== */
 
-if (activeGame.finished) {
+    if (
+        activeGame.finished
+    ) {
 
-    const names =
-        getScorePlayerNames();
-
-    const winnerName =
-        activeGame.winner === 1
-            ? names.player1
-            : names.player2;
+        const names =
+            getScorePlayerNames();
 
 
-    overlay.classList.add(
+        const winnerName =
+            activeGame.winner === 1
+                ? names.player1
+                : names.player2;
+
+
+        overlay.classList.add(
+            "winner-overlay"
+        );
+
+
+        icon.textContent =
+            "🏆";
+
+
+        title.textContent =
+            winnerName +
+            " gewinnt!";
+
+
+        message.textContent =
+            "Das Spiel ist beendet. " +
+            "Möchtest du das Ergebnis speichern " +
+            "oder den letzten Punkt zurücknehmen?";
+
+
+        undoButton.style.display =
+            "flex";
+
+
+        const noButton =
+            document.getElementById(
+                "gameOverlayNo"
+            );
+
+
+        if (noButton) {
+
+            noButton.style.display =
+                "none";
+
+        }
+
+
+        const finishButton =
+            document.getElementById(
+                "gameOverlayFinish"
+            );
+
+
+        if (finishButton) {
+
+            finishButton.innerHTML = `
+                ✓
+                <span>Beenden</span>
+            `;
+
+        }
+
+
+        overlay.classList.add(
+            "active"
+        );
+
+
+        return;
+
+    }
+
+
+    /* =========================
+       SPIEL NOCH NICHT BEENDET
+    ========================== */
+
+    overlay.classList.remove(
         "winner-overlay"
     );
 
 
     icon.textContent =
-        "🏆";
+        "⚠️";
 
 
     title.textContent =
-        winnerName +
-        " gewinnt!";
+        "Spiel beenden?";
 
 
     message.textContent =
-        "Das Spiel ist beendet. " +
-        "Möchtest du das Ergebnis speichern " +
-        "oder den letzten Punkt zurücknehmen?";
+        "Möchtest du das aktuelle Spiel wirklich verlassen? " +
+        "Der bisherige Spielstand geht dabei verloren.";
 
-
-    /* =========================
-       UNDO ANZEIGEN
-    ========================== */
 
     undoButton.style.display =
-        "flex";
+        "none";
 
-
-    /* =========================
-       NEIN AUSBLENDEN
-       (nur für laufendes Spiel)
-    ========================== */
 
     const noButton =
         document.getElementById(
             "gameOverlayNo"
         );
 
+
     if (noButton) {
 
         noButton.style.display =
-            "none";
+            "flex";
 
     }
 
-
-    /* =========================
-       BEENDEN → JA
-    ========================== */
 
     const finishButton =
         document.getElementById(
             "gameOverlayFinish"
         );
 
+
     if (finishButton) {
 
         finishButton.innerHTML = `
             ✓
-            <span>Beenden</span>
+            <span>Ja</span>
         `;
 
     }
@@ -1627,64 +1842,6 @@ if (activeGame.finished) {
     overlay.classList.add(
         "active"
     );
-
-
-    return;
-
-}
-
-
-    /* =========================
-   SPIEL NOCH NICHT BEENDET
-========================== */
-
-overlay.classList.remove(
-    "winner-overlay"
-);
-
-icon.textContent = "⚠️";
-
-title.textContent =
-    "Spiel beenden?";
-
-message.textContent =
-    "Möchtest du das aktuelle Spiel wirklich verlassen? " +
-    "Der bisherige Spielstand geht dabei verloren.";
-
-undoButton.style.display =
-    "none";
-
-/* NEIN anzeigen */
-const noButton =
-    document.getElementById(
-        "gameOverlayNo"
-    );
-
-if (noButton) {
-
-    noButton.style.display =
-        "flex";
-
-}
-
-/* JA / BEENDEN */
-const finishButton =
-    document.getElementById(
-        "gameOverlayFinish"
-    );
-
-if (finishButton) {
-
-    finishButton.innerHTML = `
-        ✓
-        <span>Ja</span>
-    `;
-
-}
-
-overlay.classList.add(
-    "active"
-);
 
 }
 
@@ -1700,6 +1857,7 @@ function closeGameOverlay() {
             "gameOverlay"
         );
 
+
     if (!overlay) {
         return;
     }
@@ -1708,6 +1866,7 @@ function closeGameOverlay() {
     overlay.classList.remove(
         "active"
     );
+
 
     overlay.classList.remove(
         "winner-overlay"
@@ -1730,11 +1889,13 @@ function overlayFinish() {
     closeGameOverlay();
 
 
-    /* =========================
-       FERTIGES SPIEL SPEICHERN
-    ========================== */
+    /*
+        FERTIGES SPIEL SPEICHERN
+    */
 
-    if (activeGame.finished) {
+    if (
+        activeGame.finished
+    ) {
 
         const match = {
 
@@ -1750,7 +1911,9 @@ function overlayFinish() {
                             Array.isArray(
                                 set.points
                             )
-                                ? [...set.points]
+                                ? [
+                                    ...set.points
+                                ]
                                 : []
 
                     })
@@ -1809,14 +1972,15 @@ function overlayFinish() {
             0
         );
 
+
         return;
 
     }
 
 
-    /* =========================
-       NICHT BEENDETES SPIEL
-    ========================== */
+    /*
+        NICHT BEENDETES SPIEL
+    */
 
     localStorage.removeItem(
         "pingpoint_active_game"
