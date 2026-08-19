@@ -945,9 +945,11 @@ select:focus-visible {
 }
 
 
-.custom-select-button:hover {
-    border-color: var(--primary-border);
-    background: var(--bg-card-2);
+@media (hover: hover) and (pointer: fine) {
+    .custom-select-button:hover {
+        border-color: var(--primary-border);
+        background: var(--bg-card-2);
+    }
 }
 
 
@@ -1137,10 +1139,12 @@ select:focus-visible {
 }
 
 
-.custom-player-option:hover {
+@media (hover: hover) and (pointer: fine) {
+    .custom-player-option:hover {
 
-    background: var(--bg-card-2);
+        background: var(--bg-card-2);
 
+    }
 }
 
 
@@ -1159,9 +1163,9 @@ select:focus-visible {
 
 .custom-option-avatar {
 
-    width: 30px;
+    width: 20px;
 
-    height: 30px;
+    height: 20px;
 
     display: flex;
 
@@ -1185,15 +1189,14 @@ select:focus-visible {
 ========================================================= */
 
 .custom-option-name {
+    flex: 1 1 auto;
+    min-width: 0;
 
-    flex: 1;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 
-    overflow: hidden;
-
-    white-space: nowrap;
-
-    text-overflow: ellipsis;
-
+    line-height: 1.3;
 }
 
 

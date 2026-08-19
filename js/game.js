@@ -1050,16 +1050,6 @@ function openCustomPlayerDropdown(wrapper) {
     );
 
 
-    setTimeout(
-        function () {
-
-            searchInput.focus();
-
-        },
-        0
-    );
-
-
     /* =========================
        SCROLL / RESIZE
     ========================== */
@@ -1109,13 +1099,93 @@ function positionCustomPlayerDropdown(
     menu
 ) {
 
-    const rect =
-        wrapper
-            .querySelector(
-                ".custom-select-button"
-            )
-            .getBoundingClientRect();
+    const button =
+        wrapper.querySelector(
+            ".custom-select-button"
+        );
 
+    if (!button) {
+        return;
+    }
+
+
+    const rect =
+        button.getBoundingClientRect();
+
+
+    /* =========================
+       DROPDOWN-BREITE
+    ========================== */
+
+    const minWidth = 220;
+
+    const screenPadding = 10;
+
+    const spaceLeft =
+        rect.right;
+
+    const spaceRight =
+        window.innerWidth -
+        rect.left;
+
+
+    let dropdownWidth;
+    let left;
+
+
+    /* =========================
+       RECHTE SEITE
+       → NACH LINKS ÖFFNEN
+    ========================== */
+
+    if (
+        rect.left >
+        window.innerWidth / 2
+    ) {
+
+        dropdownWidth =
+            Math.min(
+                Math.max(
+                    rect.width,
+                    minWidth
+                ),
+                spaceLeft -
+                screenPadding
+            );
+
+        left =
+            rect.right -
+            dropdownWidth;
+
+    }
+
+
+    /* =========================
+       LINKE SEITE
+       → NACH RECHTS ÖFFNEN
+    ========================== */
+
+    else {
+
+        dropdownWidth =
+            Math.min(
+                Math.max(
+                    rect.width,
+                    minWidth
+                ),
+                spaceRight -
+                screenPadding
+            );
+
+        left =
+            rect.left;
+
+    }
+
+
+    /* =========================
+       HÖHE
+    ========================== */
 
     const menuHeight =
         Math.min(
@@ -1127,7 +1197,6 @@ function positionCustomPlayerDropdown(
     const spaceBelow =
         window.innerHeight -
         rect.bottom;
-
 
     const spaceAbove =
         rect.top;
@@ -1157,17 +1226,21 @@ function positionCustomPlayerDropdown(
     }
 
 
+    /* =========================
+       POSITION SETZEN
+    ========================== */
+
     menu.style.position =
         "fixed";
 
     menu.style.left =
-        rect.left + "px";
+        left + "px";
 
     menu.style.top =
         top + "px";
 
     menu.style.width =
-        rect.width + "px";
+        dropdownWidth + "px";
 
 }
 
@@ -1228,7 +1301,18 @@ function closeAllCustomPlayerDropdowns() {
 
 document.addEventListener(
     "click",
-    function () {
+    function (event) {
+
+        if (
+            event.target.closest(
+                ".custom-player-dropdown"
+            ) ||
+            event.target.closest(
+                ".custom-select-button"
+            )
+        ) {
+            return;
+        }
 
         closeAllCustomPlayerDropdowns();
 
@@ -1633,7 +1717,7 @@ function renderNewGamePlayerSelection() {
     }
 
 
-const requiredPlayers =
+    const requiredPlayers =
     gameConfig.mode === "single"
         ? 2
         : 4;
@@ -1651,7 +1735,7 @@ singlePlayers.style.display =
 doublePlayers.style.display =
     gameConfig.mode === "double"
         ? "grid"
-        : "none";
+        : "none"
 
 
     /* =========================
